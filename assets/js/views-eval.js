@@ -52,36 +52,89 @@ A.publishTrack = k => { const t = trk(k); t.published = !t.published; S.log(t.pu
 A.exportResults = k => exportXlsx(S.ranking(k).map((x, i) => { const o = { 'الترتيب': i + 1, 'الجمعية': x.a.name, 'المدينة': x.a.city }; S.critScores(k, x.a.id).forEach(c => o[`${c.name} (${c.max})`] = c.score); evaluators().forEach(e => { const ev = S.evalOf(k, x.a.id, e.id); o[e.name] = ev && ev.done ? S.evalTotal(ev) : ''; }); o['المتوسط النهائي'] = x.score; return o; }), `نتائج-${trk(k).short}`, 'النتائج');
 
 /* ---------- نموذج إدخال الدرجات ---------- */
+/* مستويات الأداء حسب نسبة الدرجة */
+const LEVELS = [[.9, 'ممتاز', 'l5'], [.75, 'جيد جدًا', 'l4'], [.6, 'جيد', 'l3'], [.4, 'مقبول', 'l2'], [0, 'ضعيف', 'l1']];
+const level = r => LEVELS.find(l => r >= l[0]);
+const scaleSteps = max => { const st = Math.max(1, Math.ceil(max / 10)), out = []; for (let v = 0; v < max; v += st) out.push(v); out.push(max); return out; };
+let EVS = null; // حالة نموذج التقييم المفتوح
+
 V.evaluate = (k, aId, eId) => {
   const t = S.db.tracks[k], a = S.assoc(aId), u = S.user(); if (!t || !a) return null;
   const evs = evaluators(); if (u.role === 'evaluator') eId = u.id; else eId = eId || evs[0].id;
-  const ev = S.evalOf(k, aId, eId) || { scores: {}, note: '', done: false }, ro = t.approved, back = u.role === 'evaluator' ? 'eval-home' : 'evaluation/' + k, max = S.trackMax(k);
+  const back = u.role === 'evaluator' ? 'eval-home' : 'evaluation/' + k, max = S.trackMax(k);
   if (!t.locked) return { title: t.name, crumb: '', html: `<div class="card lockbox"><div class="lk">${icon('lock', 'lg')}</div><h3>لم يُفتح هذا المسار للتقييم بعد</h3><p class="muted mt8">سيُتاح إدخال الدرجات بعد تثبيت المعايير من مدير المبادرة.</p><a class="btn soft mt16" href="#/${back}">رجوع</a></div>` };
+  const ev = S.evalOf(k, aId, eId) || { scores: {}, note: '', done: false }, ro = t.approved;
+  EVS = { k, aId, eId, ro, back, scores: { ...ev.scores }, dirty: false };
+  const nInds = t.criteria.reduce((s, c) => s + c.inds.length, 0);
+  const others = u.role !== 'evaluator' ? evs.filter(e => e.id !== eId).map(e => ({ e, x: S.evalOf(k, aId, e.id) })) : [];
+  const st = ro ? { t: 'النتائج معتمدة — للعرض فقط', c: 'ok' } : ev.done ? { t: 'تقييم معتمد من المقيّم', c: 'ok' } : { t: Object.keys(ev.scores).length ? 'مسودة' : 'لم يبدأ', c: 'warn' };
+  const indRow = n => {
+    const files = n.reqs.flatMap(id => S.sub(aId, id).files.map(f => ({ f, r: S.req(id) })));
+    return `<div class="ind2" id="i_${n.id}">
+      <div class="ih"><div class="grow"><b>${esc(n.name)}</b> ${n.dom ? badge({ t: S.DOMAINS[n.dom], c: 'teal' }, 'plain') : ''}
+        <div class="ev">${files.length ? files.map(x => `<a onclick="A.fileOpen('${x.f.id}')" title="${esc(x.r.title)}">${icon('link', 'sm')}${esc(x.f.name)}</a>`).join('') : n.reqs.length ? '<span class="no">لم تُرفع الشواهد المرتبطة بعد</span>' : '<span class="no">يُقيَّم من بيانات المنصة</span>'}</div></div>
+        <div class="iv"><span class="lvl" id="l_${n.id}"></span><b class="num" id="v_${n.id}">—</b><small class="num">/ ${AR(n.max)}</small></div></div>
+      <div class="scale" role="radiogroup" aria-label="${esc(n.name)}" id="s_${n.id}">${scaleSteps(n.max).map(v => `<button type="button" role="radio" class="sb num" data-v="${v}" ${ro ? 'disabled' : ''} onclick="A.pick('${n.id}',${v})">${AR(v)}</button>`).join('')}</div></div>`;
+  };
   return {
     title: t.name, crumb: `<a href="#/${back}">${u.role === 'evaluator' ? 'مهام التقييم' : 'التقييم والنتائج'}</a>`,
-    html: `<div class="card"><div class="bd row" style="gap:16px">${av(a.short, 'lg')}<div class="grow"><h2 style="font-size:19px">${esc(a.name)}</h2><p class="small muted">${esc(a.city)} · ${t.name} — النسخة ${AR(t.version)}</p></div>
-      ${u.role !== 'evaluator' ? `<div class="field"><label>الإدخال باسم المقيّم</label><select class="input sm" onchange="go('evaluate/${k}/${aId}/'+this.value)">${evs.map(e => opt(e.id, e.name, eId)).join('')}</select></div>` : ''}
-      ${ro ? badge({ t: 'النتائج معتمدة — للعرض فقط', c: 'ok' }) : ev.done ? badge({ t: 'تقييم مكتمل', c: 'ok' }) : badge({ t: Object.keys(ev.scores).length ? 'مسودة' : 'لم يبدأ', c: 'warn' })}</div></div>
-    <div class="sect">${t.criteria.map((c, i) => `<div class="crit"><div class="ch"><span class="rank num">${AR(i + 1)}</span><h3>${esc(c.name)}</h3><span class="wt num">${AR(c.inds.reduce((x, n) => x + n.max, 0))} درجة</span></div>
-      ${c.inds.map(n => { const files = n.reqs.flatMap(id => S.sub(aId, id).files.map(f => ({ f, r: S.req(id) }))); return `<div class="ind"><div><b style="font-weight:500">${esc(n.name)}</b> ${n.dom ? badge({ t: S.DOMAINS[n.dom], c: 'teal' }, 'plain') : ''}<div class="ev">${files.length ? files.map(x => `<a onclick="A.fileOpen('${x.f.id}')" title="${esc(x.r.title)}">${icon('link', 'sm')}${esc(x.f.name)}</a>`).join('') : n.reqs.length ? '<span class="no">لم تُرفع الشواهد المرتبطة بعد</span>' : ''}</div></div>
-        <div class="sc"><input class="input num" type="number" min="0" max="${n.max}" step="0.5" id="sc_${n.id}" value="${ev.scores[n.id] ?? ''}" ${ro ? 'disabled' : ''} oninput="A.evTotal(this,${n.max})" aria-label="${esc(n.name)}"><span class="muted small num">/ ${AR(n.max)}</span></div></div>`; }).join('')}</div>`).join('')}</div>
-    <div class="card sect"><div class="bd field"><label>ملاحظات وتوصيات المقيّم</label><textarea class="input" id="evNote" ${ro ? 'disabled' : ''} placeholder="أبرز نقاط القوة وفرص التحسين...">${esc(ev.note)}</textarea></div></div>
-    <div class="totalbar"><div><div class="small" style="color:rgba(255,255,255,.6)">المجموع</div><div class="tv num"><span id="evT">${AR(S.evalTotal(ev))}</span> <small>/ ${AR(max)}</small></div></div><span class="grow"></span>
-      ${ro ? `<a class="btn ghost" href="#/${back}">رجوع</a>` : `<a class="btn" style="background:rgba(255,255,255,.1);color:#fff" href="#/${back}">إلغاء</a><button class="btn" style="background:rgba(255,255,255,.1);color:#fff" onclick="A.evSave('${k}','${aId}','${eId}',false)">حفظ كمسودة</button><button class="btn primary" onclick="A.evSave('${k}','${aId}','${eId}',true)">${icon('check', 'sm')} اعتماد التقييم</button>`}</div>`,
+    html: `<div class="evhead">
+      <div class="row" style="gap:16px;flex-wrap:nowrap">${av(a.short, 'lg')}<div class="grow" style="min-width:0"><span class="tagline">${t.name} · النسخة ${AR(t.version)}</span><h2>${esc(a.name)}</h2><p>${esc(a.city)} · المقيّم: <b>${esc(S.userById(eId).name)}</b></p></div></div>
+      <div class="row" style="gap:10px">${u.role !== 'evaluator' ? `<select class="input sm" style="width:auto;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff" onchange="go('evaluate/${k}/${aId}/'+this.value)" aria-label="المقيّم">${evs.map(e => opt(e.id, e.name, eId)).join('')}</select>` : ''}${badge(st)}</div>
+      <div class="evprog"><div class="row between small"><span>اكتمال الإدخال</span><b class="num" id="evDone"></b></div><div class="progress"><i id="evDoneBar"></i></div></div>
+    </div>
+    <div class="evx">
+      <div class="evmain">
+        <div class="legend">${LEVELS.slice().reverse().map(l => `<span class="${l[2]}"><i></i>${l[1]}${l[0] ? ` <small class="num">≥ ${AR(Math.round(l[0] * 100))}٪</small>` : ''}</span>`).join('')}</div>
+        ${t.criteria.map((c, i) => `<section class="crit2" id="c_${c.id}"><header><span class="rank num">${AR(i + 1)}</span><div class="grow"><h3>${esc(c.name)}</h3><small>${AR(c.inds.length)} ${c.inds.length > 2 ? 'مؤشرات' : c.inds.length === 2 ? 'مؤشران' : 'مؤشر'}</small></div><div class="sub"><b class="num" id="cs_${c.id}">٠</b><small class="num">/ ${AR(c.inds.reduce((x, n) => x + n.max, 0))}</small></div></header>${c.inds.map(indRow).join('')}</section>`).join('')}
+        <div class="card"><div class="bd field"><label>ملاحظات وتوصيات المقيّم</label><textarea class="input" id="evNote" ${ro ? 'disabled' : ''} oninput="EVS.dirty=true;A.evRefresh()" placeholder="أبرز نقاط القوة وفرص التحسين...">${esc(ev.note)}</textarea></div></div>
+      </div>
+      <aside class="evside"><div class="card">
+        <div class="bd center" style="display:grid;place-items:center;gap:6px;padding-bottom:12px"><div id="evRing"></div><span class="lvlbig" id="evLvl"></span></div>
+        <div class="evcrit">${t.criteria.map((c, i) => `<a href="javascript:void(0)" onclick="document.getElementById('c_${c.id}').scrollIntoView({behavior:'smooth',block:'start'})"><span class="grow">${AR(i + 1)}. ${esc(c.name)}</span><b class="num" id="cx_${c.id}"></b><div class="progress"><i id="cb_${c.id}"></i></div></a>`).join('')}</div>
+        ${others.length ? `<div class="evoth"><small>المقيّمون الآخرون</small>${others.map(o => `<div class="row between"><span class="small">${esc(o.e.name)}</span><span class="num small b">${o.x ? AR(S.evalTotal(o.x)) + (o.x.done ? '' : ' (مسودة)') : '—'}</span></div>`).join('')}</div>` : ''}
+        <div class="evact">${ro ? `<a class="btn ghost" href="#/${back}">رجوع</a>` : `<button class="btn primary" onclick="A.evSave(true)">${icon('check', 'sm')} اعتماد التقييم</button><button class="btn ghost" onclick="A.evSave(false)">حفظ كمسودة</button><span class="xs muted center" id="evDirty"></span>`}</div>
+      </div></aside>
+    </div>
+    <div class="totalbar evmob"><div><div class="small" style="color:rgba(255,255,255,.6)">المجموع</div><div class="tv num"><span id="evT"></span> <small>/ ${AR(max)}</small></div></div><span class="grow"></span>${ro ? '' : `<button class="btn" style="background:rgba(255,255,255,.1);color:#fff" onclick="A.evSave(false)">مسودة</button><button class="btn primary" onclick="A.evSave(true)">اعتماد</button>`}</div>`,
+    after() { EVS.nInds = nInds; A.evRefresh(); },
   };
 };
-A.evTotal = (el, max) => { if (+el.value > max) el.value = max; if (+el.value < 0) el.value = 0; $('#evT').textContent = AR($$('.ind .sc input[id^="sc_"]').reduce((t, i) => t + (+i.value || 0), 0)); };
-A.evSave = (k, aId, eId, done) => {
-  const scores = {}; let miss = 0;
-  trk(k).criteria.forEach(c => c.inds.forEach(n => { const el = document.getElementById('sc_' + n.id); if (el.value === '') miss++; else scores[n.id] = Math.max(0, Math.min(n.max, +el.value)); }));
-  if (done && miss) return toast(`أدخل درجات جميع المؤشرات (${AR(miss)} متبقية)`, 'alert');
-  (S.db.evals[k][aId] = S.db.evals[k][aId] || {})[eId] = { scores, note: $('#evNote').value.trim(), done, at: new Date().toISOString() };
+A.pick = (id, v) => { if (!EVS || EVS.ro) return; if (EVS.scores[id] === v) delete EVS.scores[id]; else EVS.scores[id] = v; EVS.dirty = true; A.evRefresh(); };
+A.evRefresh = () => {
+  const t = trk(EVS.k), max = S.trackMax(EVS.k); let total = 0, filled = 0;
+  t.criteria.forEach(c => {
+    let sub = 0; const cm = c.inds.reduce((x, n) => x + n.max, 0);
+    c.inds.forEach(n => {
+      const v = EVS.scores[n.id], has = v !== undefined, L = has ? level(v / n.max) : null;
+      if (has) { sub += v; filled++; }
+      document.getElementById(`v_${n.id}`).textContent = has ? AR(v) : '—';
+      const lv = document.getElementById(`l_${n.id}`); lv.textContent = has ? L[1] : 'لم تُحدَّد'; lv.className = 'lvl ' + (has ? L[2] : '');
+      const sc = document.getElementById(`s_${n.id}`); sc.className = 'scale ' + (has ? L[2] : '');
+      sc.querySelectorAll('.sb').forEach(b => { const bv = +b.dataset.v; b.classList.toggle('on', has && bv === v); b.classList.toggle('fill', has && bv <= v); b.setAttribute('aria-checked', has && bv === v); });
+      document.getElementById(`i_${n.id}`).classList.toggle('done', has);
+    });
+    total += sub;
+    document.getElementById(`cs_${c.id}`).textContent = AR(sub); document.getElementById(`cx_${c.id}`).textContent = `${AR(sub)} / ${AR(cm)}`;
+    const cb = document.getElementById(`cb_${c.id}`); cb.style.width = (sub / cm * 100) + '%';
+  });
+  const p = Math.round(total / max * 100), L = level(total / max);
+  $('#evRing').innerHTML = ring(p, 176, `${AR(total)} من ${AR(max)}`);
+  $('#evLvl').textContent = filled ? L[1] : 'ابدأ باختيار الدرجات'; $('#evLvl').className = 'lvlbig ' + (filled ? L[2] : '');
+  $('#evT').textContent = AR(total);
+  $('#evDone').textContent = `${AR(filled)} من ${AR(EVS.nInds)} مؤشرًا`; $('#evDoneBar').style.width = (filled / EVS.nInds * 100) + '%';
+  const dd = $('#evDirty'); if (dd) dd.textContent = EVS.dirty ? '● تغييرات غير محفوظة' : '';
+};
+A.evSave = done => {
+  const { k, aId, eId } = EVS, miss = trk(k).criteria.reduce((s, c) => s + c.inds.filter(n => EVS.scores[n.id] === undefined).length, 0);
+  if (done && miss) { toast(`حدّد درجات جميع المؤشرات (${AR(miss)} متبقية)`, 'alert'); const first = trk(k).criteria.flatMap(c => c.inds).find(n => EVS.scores[n.id] === undefined); if (first) document.getElementById('i_' + first.id).scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+  (S.db.evals[k][aId] = S.db.evals[k][aId] || {})[eId] = { scores: { ...EVS.scores }, note: $('#evNote').value.trim(), done, at: new Date().toISOString() };
   S.log(done ? 'إدخال درجات' : 'حفظ مسودة تقييم', `${trk(k).short} · ${S.assoc(aId).name} · ${S.userById(eId).name}`);
-  toast(done ? 'تم اعتماد التقييم' : 'تم حفظ المسودة'); if (done) go(S.user().role === 'evaluator' ? 'eval-home' : 'evaluation/' + k); else R();
+  EVS.dirty = false; toast(done ? 'تم اعتماد التقييم' : 'تم حفظ المسودة'); if (done) go(S.user().role === 'evaluator' ? 'eval-home' : 'evaluation/' + k); else R();
 };
 
 /* ---------- لوحة المقيّم ---------- */
-let evTrack = 'docs';
+let evTrack = 'exec';
 V['eval-home'] = () => {
   const u = S.user(), t = S.db.tracks[evTrack], list = eligible(evTrack), mine = a => S.evalOf(evTrack, a.id, u.id), done = list.filter(a => mine(a) && mine(a).done).length;
   return {
@@ -110,7 +163,7 @@ V.reports = () => {
   };
 };
 const repWrap = (title, sub, body, tools = '') => `<div class="row between noprint mb16" style="max-width:940px;margin-inline:auto"><button class="btn ghost" onclick="history.back()">${icon('back', 'sm')} رجوع</button><div class="row">${tools}<button class="btn primary" onclick="print()">${icon('print', 'sm')} طباعة / حفظ PDF</button></div></div>
-  <div class="report"><div class="cover"><img src="assets/img/icon-white.png" alt=""><div><h1>${title}</h1><p>${sub}</p></div><div class="dt">مبادرة سجايا<br>${esc(S.db.cycle)}<br>${fmtD(new Date())}</div></div><div class="body">${body}</div><div class="foot"><span>منصة سجايا الرقمية — قيم أصيلة.. وطباع نبيلة</span><span>تنفيذ <img src="assets/img/partners/itmam-color.png" alt="جمعية إتمام للتمكين القيمي للأيتام"> · برعاية <img src="assets/img/partners/majed-logo-primary.svg" alt="مؤسسة أبناء علي بن عثمان الماجد الأهلية"></span></div></div>`;
+  <div class="report"><div class="cover"><img src="assets/img/icon-white.svg" alt=""><div><h1>${title}</h1><p>${sub}</p></div><div class="dt">مبادرة سجايا<br>${esc(S.db.cycle)}<br>${fmtD(new Date())}</div></div><div class="body">${body}</div><div class="foot"><span>منصة سجايا الرقمية — قيم أصيلة.. وطباع نبيلة</span><span>تنفيذ <img src="assets/img/partners/itmam-color.png" alt="جمعية إتمام للتمكين القيمي للأيتام"> · برعاية <img src="assets/img/partners/majed-logo-primary.svg" alt="مؤسسة أبناء علي بن عثمان الماجد الأهلية"></span></div></div>`;
 const evalBlock = (k, a) => { const t = trk(k), sc = S.trackScore(k, a.id), rk = S.ranking(k), pos = rk.findIndex(x => x.a.id === a.id); if (sc === null) return ''; return `<h2>${t.name}</h2><div class="rk" style="grid-template-columns:repeat(3,1fr)"><div><b class="num">${AR(sc)}</b><span>الدرجة من ${AR(S.trackMax(k))}</span></div><div><b class="num">${AR(pos + 1)}</b><span>الترتيب من ${AR(rk.length)}</span></div><div><b class="num">${AR(S.doneEvals(k, a.id).length)}</b><span>عدد المقيمين</span></div></div><div class="mt16">${S.critScores(k, a.id).map(c => hbar(c.name, c.score, c.max, `${AR(c.score)} / ${AR(c.max)}`)).join('')}</div>`; };
 
 V.report = (type, p1, p2) => {

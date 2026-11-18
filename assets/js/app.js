@@ -34,7 +34,7 @@ function shell(u, name, v) {
   const demoAcc = [['u1', 'مدير المبادرة'], ['u2', 'المساعد الإداري'], ['u3', 'لجنة التقييم'], ['ua1', 'جمعية مشاركة']];
   return `<div class="shell" id="shell">
     <aside class="side">
-      <a class="brand" href="index.html" style="color:#fff"><img src="assets/img/icon-white.png" alt=""><span><b>منصة سجايا</b><small>قيم أصيلة.. وطباع نبيلة</small></span></a>
+      <a class="brand" href="index.html" style="color:#fff"><img src="assets/img/icon-white.svg" alt=""><span><b>منصة سجايا</b><small>قيم أصيلة.. وطباع نبيلة</small></span></a>
       <nav>${nav}</nav>
       <div class="spons"><div><small>تنفيذ</small><img src="assets/img/partners/itmam-white.png" alt="جمعية إتمام للتمكين القيمي للأيتام"></div><div><small>برعاية</small><img src="assets/img/partners/majed-logo-white.svg" alt="مؤسسة أبناء علي بن عثمان الماجد الأهلية"></div></div>
       <div class="me">${av(a ? a.short : u.name)}<span><b>${esc(a ? a.name : u.name)}</b><small>${esc(a ? u.name : S.ROLES[u.role])}</small></span><button onclick="A.logout()" title="تسجيل الخروج" aria-label="تسجيل الخروج">${icon('logout')}</button></div>
@@ -80,11 +80,11 @@ A.switchUser = id => { S.login(id); const u = S.user(); lastRoute = ''; if (loca
 /* ---------- الدخول والتسجيل ---------- */
 const authWrap = (inner) => `<div class="auth">
   <div class="art"><span class="au x1"></span><span class="au x2"></span>
-    <a href="index.html" class="row" style="gap:12px;color:#fff;position:relative;z-index:1"><img src="assets/img/icon-white.png" alt="" style="height:44px"><b style="font-family:var(--f-head);font-size:18px">منصة سجايا</b></a>
-    <div class="pearl"><img src="assets/img/icon.png" alt="رمز سجايا"></div>
+    <a href="index.html" class="row" style="gap:12px;color:#fff;position:relative;z-index:1"><img src="assets/img/icon-white.svg" alt="" style="height:44px"><b style="font-family:var(--f-head);font-size:18px">منصة سجايا</b></a>
+    <div class="pearl"><img src="assets/img/icon.svg" alt="رمز سجايا"></div>
     <div style="position:relative;z-index:1"><h2>المرجع الرقمي الموحّد<br>لمبادرة <em>سجايا</em></h2><p class="mt16">تسجيل الجمعيات، استقبال الوثائق والشواهد، التقييم، ومتابعة التنفيذ وقياس الأداء — في منصة واحدة.</p></div>
     <div class="foot"><span>برعاية</span><img src="assets/img/partners/majed-logo-white.svg" alt="مؤسسة أبناء علي بن عثمان الماجد الأهلية"><span style="width:1px;height:24px;background:rgba(255,255,255,.15)"></span><span>تنفيذ</span><img src="assets/img/partners/itmam-white.png" alt="جمعية إتمام للتمكين القيمي للأيتام"></div></div>
-  <div class="frm"><div class="box"><img class="logo-m" src="assets/img/icon.png" alt="">${inner}</div></div></div>`;
+  <div class="frm"><div class="box"><img class="logo-m" src="assets/img/icon.svg" alt="">${inner}</div></div></div>`;
 
 const AUTH = {
   login: () => authWrap(`

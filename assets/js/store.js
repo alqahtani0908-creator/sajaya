@@ -1,6 +1,6 @@
 /* ===== طبقة البيانات — تخزين محلي تجريبي قابل للاستبدال بقاعدة بيانات سحابية ===== */
 const S = (() => {
-  const KEY = 'sajaya.db.v4', SKEY = 'sajaya.session';
+  const KEY = 'sajaya.db.v5', SKEY = 'sajaya.session';
   const DAY = 864e5;
   let seed = 20261118;
   const rnd = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
@@ -113,7 +113,7 @@ const S = (() => {
         ],
       },
       exec: {
-        key: 'exec', name: 'تقييم التميز في التنفيذ', short: 'تقييم التنفيذ', version: 1, locked: false, lockedAt: null, approved: false, approvedAt: null, published: false,
+        key: 'exec', name: 'تقييم التميز في التنفيذ', short: 'تقييم التنفيذ', version: 1, locked: true, lockedAt: T(-3), approved: false, approvedAt: null, published: false,
         criteria: [
           C('e1', 'تكامل المجالات الثلاثة', [['تنفيذ برامج قيمنا الأصيلة', 5, 'v', ['r14', 'r17']], ['تنفيذ برامج علوم وسنع', 5, 'h', ['r14', 'r17']], ['تنفيذ برامج التميز الذاتي', 5, 's', ['r14', 'r17']]]),
           C('e2', 'انتظام التنفيذ', [['تنفيذ الأنشطة وفق الخطة المعتمدة', 8, null, ['r14', 'r17']], ['انتظام حضور المستفيدين', 7, null, ['r16']]]),
@@ -146,6 +146,15 @@ const S = (() => {
         evals.docs[a.id][e] = { scores, note: pick(notes), done: true, at: T(-60 + rnd() * 6) };
       });
     });
+    // تقييم التنفيذ: جارٍ — بعض المقيّمين أنهوا جمعيات، ومسودة واحدة
+    const execNotes = ['تنفيذ منتظم وتوثيق جيد، ويُوصى بتوسيع إشراك الأسر.', 'أثر واضح على المستفيدين، والشراكات تحتاج إلى تفعيل أكبر.', 'التزام زمني ممتاز، مع فرصة لتعميق برامج التميز الذاتي.'];
+    const execPlan = { u4: ['a1', 'a2', 'a3', 'a4', 'a5', 'a7'], u5: ['a1', 'a2', 'a3', 'a10'], u3: ['a2'] };
+    Object.entries(execPlan).forEach(([e, ids]) => ids.forEach(id => {
+      const a = assocs.find(x => x.id === id), base = .5 + .45 * a.p, scores = {};
+      tracks.exec.criteria.forEach(c => c.inds.forEach(n => scores[n.id] = Math.max(1, Math.min(n.max, Math.round(n.max * (base + (rnd() - .5) * .2))))));
+      (evals.exec[id] = evals.exec[id] || {})[e] = { scores, note: pick(execNotes), done: true, at: T(-1 + rnd()) };
+    }));
+    { const scores = {}; tracks.exec.criteria.slice(0, 3).forEach(c => c.inds.forEach(n => scores[n.id] = Math.round(n.max * .8))); evals.exec.a1.u3 = { scores, note: '', done: false, at: T(-.3) }; }
 
     const mt = [
       ['اللقاء التعريفي بمبادرة سجايا', -121, 'تأكيد الرغبة في المشاركة'],
@@ -180,11 +189,11 @@ const S = (() => {
       ['u1', 'تثبيت نسخة المعايير', 'تقييم الوثائق — النسخة 1', -69], ['u2', 'إرسال رابط تفعيل', 'جمعية ضياء', -6],
     ].map(x => ({ id: uid(), user: x[0], action: x[1], target: x[2], at: T(x[3]) })).sort((a, b) => b.at.localeCompare(a.at));
 
-    return { v: 4, seededAt: now, cycle: 'الدورة الأولى ١٤٤٨هـ', stages, requirements, assocs, subs, tracks, evals, users, meetings, notifs, audit };
+    return { v: 5, seededAt: now, cycle: 'الدورة الأولى ١٤٤٨هـ', stages, requirements, assocs, subs, tracks, evals, users, meetings, notifs, audit };
   }
 
   let db;
-  function load() { try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) { db = null; } if (!db || db.v !== 4) { db = build(); save(); } }
+  function load() { try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) { db = null; } if (!db || db.v !== 5) { db = build(); save(); } }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { } }
   function reset() { db = build(); save(); }
   load();
