@@ -45,8 +45,8 @@ const PAL = ['#30908C', '#5DA88B', '#2E3143', '#8FC9B4', '#555B6D', '#C98A1B', '
 function chart(id, cfg) {
   const el = document.getElementById(id); if (!el || !window.Chart) return;
   if (CH[id]) CH[id].destroy();
-  Chart.defaults.font.family = '"IBM Plex Sans Arabic", sans-serif'; Chart.defaults.font.size = 12; Chart.defaults.color = '#8A90A0'; Chart.defaults.locale = 'ar-SA';
-  const base = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false, rtl: true, labels: { usePointStyle: true, boxWidth: 8, boxHeight: 8, padding: 16 } }, tooltip: { rtl: true, backgroundColor: '#2E3143', padding: 12, cornerRadius: 10, titleFont: { family: '"Readex Pro"', weight: '500' } } } };
+  Chart.defaults.font.family = '"Thmanyah Serif Text", sans-serif'; Chart.defaults.font.size = 12; Chart.defaults.color = '#8A90A0'; Chart.defaults.locale = 'ar-SA';
+  const base = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false, rtl: true, labels: { usePointStyle: true, boxWidth: 8, boxHeight: 8, padding: 16 } }, tooltip: { rtl: true, backgroundColor: '#2E3143', padding: 12, cornerRadius: 10, titleFont: { family: '"Thmanyah Serif Text"', weight: '500' } } } };
   const merge = (a, b) => { for (const k in b) a[k] = b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) ? merge(a[k] || {}, b[k]) : b[k]; return a; };
   cfg.options = merge(base, cfg.options || {});
   CH[id] = new Chart(el, cfg);

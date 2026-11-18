@@ -1,4 +1,10 @@
 /* ===== منصة سجايا — النظام البصري ===== */
+@font-face{font-family:"Thmanyah Serif Text";src:url("../fonts/thmanyahseriftext-Light.otf") format("opentype");font-weight:300;font-display:swap}
+@font-face{font-family:"Thmanyah Serif Text";src:url("../fonts/thmanyahseriftext-Regular.otf") format("opentype");font-weight:400;font-display:swap}
+@font-face{font-family:"Thmanyah Serif Text";src:url("../fonts/thmanyahseriftext-Medium.otf") format("opentype");font-weight:500;font-display:swap}
+@font-face{font-family:"Thmanyah Serif Text";src:url("../fonts/thmanyahseriftext-Bold.otf") format("opentype");font-weight:700;font-display:swap}
+@font-face{font-family:"Thmanyah Serif Text";src:url("../fonts/thmanyahseriftext-Black.otf") format("opentype");font-weight:900;font-display:swap}
+
 :root{
   --navy:#2E3143; --navy-800:#272A3B; --navy-900:#202231; --navy-950:#181A26;
   --slate:#555B6D; --teal:#30908C; --teal-700:#267773; --mint:#5DA88B;
@@ -12,8 +18,8 @@
   --sh-1:0 1px 2px rgba(46,49,67,.05),0 1px 1px rgba(46,49,67,.03);
   --sh-2:0 6px 24px -8px rgba(46,49,67,.14),0 2px 6px rgba(46,49,67,.05);
   --sh-3:0 24px 60px -20px rgba(24,26,38,.35);
-  --f-head:"Readex Pro","IBM Plex Sans Arabic",system-ui,sans-serif;
-  --f-body:"IBM Plex Sans Arabic","Readex Pro",system-ui,sans-serif;
+  --f-head:"Thmanyah Serif Text",system-ui,sans-serif;
+  --f-body:"Thmanyah Serif Text",system-ui,sans-serif;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}

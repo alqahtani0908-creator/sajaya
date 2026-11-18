@@ -313,3 +313,4 @@ body{background:radial-gradient(1200px 600px at 100% -10%,rgba(93,168,139,.10),t
 .evmob{display:none}
 @media (max-width:1180px){.evx{grid-template-columns:1fr}.evside{position:static;order:-1}.evside .evcrit{display:grid;grid-template-columns:1fr 1fr;gap:0 8px}.evact{display:none}.evmob{display:flex}}
 @media (max-width:640px){.evhead{grid-template-columns:1fr;padding:22px 20px}.evhead h2{font-size:20px}.ind2{padding:16px 14px}.ind2 .ih{flex-direction:column;gap:8px}.sb{min-width:34px;height:42px;font-size:14px}.evside .evcrit{grid-template-columns:1fr}.crit2>header{padding:14px}}
+.scale.l1{--c:var(--l1)}.scale.l2{--c:var(--l2)}.scale.l3{--c:var(--l3)}.scale.l4{--c:var(--l4)}.scale.l5{--c:var(--l5)}
