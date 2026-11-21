@@ -23,7 +23,7 @@ const opt = (v, t, sel) => `<option value="${esc(v)}" ${v == sel ? 'selected' : 
 
 function ring(v, size = 170, label = '') {
   const r = size / 2 - 12, c = 2 * Math.PI * r;
-  return `<div class="ringw" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5DA88B"/><stop offset="1" stop-color="#30908C"/></linearGradient></defs><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="#EEF0F4" stroke-width="14"/><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="url(#rg)" stroke-width="14" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - v / 100)}"/></svg><div class="c"><b class="num">${pct(v)}</b><span>${label}</span></div></div>`;
+  return `<div class="ringw" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5DA88B"/><stop offset="1" stop-color="#30908C"/></linearGradient></defs><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="#EEF0F4" stroke-width="14"/><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="#30908C" stroke-width="14" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - v / 100)}"/></svg><div class="c"><b class="num">${pct(v)}</b><span>${label}</span></div></div>`;
 }
 
 function toast(msg, ic = 'check') { const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = icon(ic) + `<span>${esc(msg)}</span>`; $('#toasts').appendChild(t); setTimeout(() => { t.style.opacity = 0; t.style.transition = '.3s'; setTimeout(() => t.remove(), 300); }, 3200); }
@@ -68,6 +68,7 @@ function stepper(a) {
 }
 /* عدّاد الأرقام في بطاقات المؤشرات */
 function countUp(root = document) {
+  return; // الأرقام تُعرض مباشرة دون عدّاد متحرك
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const toL = t => t.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
   $$('.kpi .v.num, .ringw .c b', root).forEach(el => {

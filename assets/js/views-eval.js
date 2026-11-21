@@ -205,7 +205,7 @@ A.evSave = done => {
 };
 A.reopen = (k, aId, eId) => { const x = S.evalOf(k, aId, eId); x.done = false; S.notify('u:' + eId, 'warn', 'أُعيد فتح ورقة تقييم', `أعادت الإدارة فتح ورقة تقييمك لـ ${S.assoc(aId).name} للمراجعة.`); S.log('إعادة فتح ورقة تقييم', `${trk(k).short} · ${S.assoc(aId).name} · ${S.userById(eId).name}`); toast('أُعيد فتح الورقة وأُشعر المقيّم'); R(); };
 const myQueue = (u, k) => eligible(k).filter(a => S.assigned(k, a.id).includes(u.id));
-A.nextTask = k => { const u = S.user(), n = myQueue(u, k).find(a => !(S.evalOf(k, a.id, u.id) || {}).done); if (n) { toast(`التالي: ${n.name}`, 'star'); go(`evaluate/${k}/${n.id}/mine`); } else { toast('أنجزت جميع جمعياتك في هذا المسار 🎉', 'trophy'); go('eval-home'); } };
+A.nextTask = k => { const u = S.user(), n = myQueue(u, k).find(a => !(S.evalOf(k, a.id, u.id) || {}).done); if (n) { toast(`التالي: ${n.name}`, 'star'); go(`evaluate/${k}/${n.id}/mine`); } else { toast('أنجزت جميع جمعياتك في هذا المسار', 'trophy'); go('eval-home'); } };
 
 /* ---------- مهام المقيّم ---------- */
 let evTrack = 'exec';

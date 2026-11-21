@@ -110,9 +110,9 @@ A.switchUser = id => { S.login(id); const u = S.user(); lastRoute = ''; if (loca
 
 /* ---------- الدخول والتسجيل ---------- */
 const authWrap = (inner) => `<div class="auth">
-  <div class="art"><span class="au x1"></span><span class="au x2"></span>
+  <div class="art">
     <a href="index.html" class="row" style="gap:12px;color:#fff;position:relative;z-index:1"><img src="assets/img/icon-white.svg" alt="" style="height:44px"><b style="font-family:var(--f-head);font-size:18px">منصة سجايا</b></a>
-    <div class="pearl"><img src="assets/img/icon.svg" alt="رمز سجايا"></div>
+    <figure class="emb"><img src="assets/img/icon.svg" alt="رمز سجايا"><figcaption>اللؤلؤة في صدفتها</figcaption></figure>
     <div style="position:relative;z-index:1"><h2>المرجع الرقمي الموحّد<br>لمبادرة <em>سجايا</em></h2><p class="mt16">تسجيل الجمعيات، استقبال الوثائق والشواهد، التقييم، ومتابعة التنفيذ وقياس الأداء — في منصة واحدة.</p></div>
     <div class="foot"><span>برعاية</span><img src="assets/img/partners/majed-logo-white.svg" alt="مؤسسة أبناء علي بن عثمان الماجد الأهلية"><span style="width:1px;height:24px;background:rgba(255,255,255,.15)"></span><span>تنفيذ</span><img src="assets/img/partners/itmam-white.png" alt="جمعية إتمام للتمكين القيمي للأيتام"></div></div>
   <div class="frm"><div class="box"><img class="logo-m" src="assets/img/icon.svg" alt="">${inner}</div></div></div>`;
