@@ -8,8 +8,8 @@
   $('#yr').textContent = AR(new Date().getFullYear());
 
   /* البداية */
-  const start = () => { $('#intro').classList.add('out'); document.body.classList.add('ready'); };
-  if (RM || sessionStorage.getItem('sj.intro')) start(); else { try { sessionStorage.setItem('sj.intro', 1); } catch (e) { } setTimeout(start, 1150); }
+  const start = () => document.body.classList.add('ready');
+  requestAnimationFrame(() => requestAnimationFrame(start));
 
   /* شريط القيم */
   const vals = ['الصدق', 'الرحمة', 'الأمانة', 'النبل', 'الصفاء', 'الوفاء', 'الحياء', 'الكرم', 'بر الوالدين', 'الشجاعة', 'السنع', 'المروءة'];
@@ -80,13 +80,13 @@
   if (!RM && matchMedia('(hover:hover)').matches) {
     $$('.tilt3').forEach(el => { el.addEventListener('pointermove', e => { const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; el.style.transform = `perspective(900px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg) translateY(-6px)`; }); el.addEventListener('pointerleave', () => el.style.transform = ''); });
     const tilt = $('#tilt'), stage = $('#stage');
-    $('.hero').addEventListener('pointermove', e => { const r = stage.getBoundingClientRect(), x = (e.clientX - (r.left + r.width / 2)) / innerWidth, y = (e.clientY - (r.top + r.height / 2)) / innerHeight; tilt.style.transform = `rotateY(${x * 22}deg) rotateX(${-y * 18}deg)`; });
+    $('.hero').addEventListener('pointermove', e => { const r = stage.getBoundingClientRect(), x = (e.clientX - (r.left + r.width / 2)) / innerWidth, y = (e.clientY - (r.top + r.height / 2)) / innerHeight;  });
   }
 
   /* الأعماق: لآلئ مضيئة صاعدة */
   const cv = $('#deep'), ctx = cv.getContext('2d'); let W, H, P = [], DPR = Math.min(2, devicePixelRatio || 1), run = true;
-  const size = () => { W = cv.clientWidth; H = cv.clientHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); const n = Math.round(Math.min(90, W * H / 14000)); P = Array.from({ length: n }, () => mk(true)); };
-  const mk = init => ({ x: Math.random() * W, y: init ? Math.random() * H : H + 10, r: Math.random() * 2.2 + .4, s: Math.random() * .35 + .08, w: Math.random() * 2 * Math.PI, a: Math.random() * .5 + .15, big: Math.random() < .08 });
+  const size = () => { W = cv.clientWidth; H = cv.clientHeight; cv.width = W * DPR; cv.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); const n = Math.round(Math.min(40, W * H / 32000)); P = Array.from({ length: n }, () => mk(true)); };
+  const mk = init => ({ x: Math.random() * W, y: init ? Math.random() * H : H + 10, r: Math.random() * 2.2 + .4, s: Math.random() * .35 + .08, w: Math.random() * 2 * Math.PI, a: Math.random() * .3 + .08, big: false });
   const draw = () => {
     if (!run) return; ctx.clearRect(0, 0, W, H);
     for (const p of P) {

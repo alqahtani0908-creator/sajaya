@@ -395,3 +395,52 @@ h1,h2,h3,h4,.hero h1,.sec-h h2,.about h2{letter-spacing:0}
 html[dir=rtl] .overline .rule{background:linear-gradient(to left,rgba(143,211,184,.6),transparent)}
 @media (max-width:1060px){.overline{justify-content:center}.overline .rule{display:none}}
 @media (max-width:420px){.overline{flex-wrap:wrap;row-gap:4px;white-space:normal;font-size:14px}.overline em{border:0;padding:0;flex-basis:100%;text-align:center}}
+
+/* ===== مراجعة الطابع القوالبي: أقل مؤثرات، أكثر طباعة وهوية ===== */
+/* البطل */
+.aurora{opacity:.32;animation:none}
+.hero::before{opacity:.025}
+.stage{height:520px}
+.stage .orb{width:360px;height:360px;animation:none;opacity:.55;background:radial-gradient(circle at 50% 42%,rgba(143,211,184,.22),transparent 68%)}
+.stage .r1{width:380px;height:380px;border-color:rgba(255,255,255,.07)}
+.emblem{position:relative;margin:0;display:flex;flex-direction:column;align-items:center;gap:26px}
+.stage .tilt{transform:none!important}
+.stage .tilt img{height:300px;animation:none;filter:drop-shadow(0 30px 50px rgba(0,0,0,.4))}
+.emblem figcaption{display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:14px;border-top:1px solid rgba(255,255,255,.14);min-width:220px;text-align:center}
+.emblem figcaption b{font-family:var(--f-head);font-weight:500;font-size:15px;color:#e6f5ef}
+.emblem figcaption span{font-size:13px;color:rgba(255,255,255,.5);max-width:260px;line-height:1.7}
+.hero h1 .accent{color:#8fd3b8;padding:.1em .04em .3em;margin:-.1em -.04em -.3em}
+/* الأرقام: صف بسيط بخط علوي رفيع */
+.hstats{background:none;border:0;border-top:1px solid rgba(255,255,255,.12);border-radius:0;backdrop-filter:none}
+.hstats div{padding:22px 10px 8px;text-align:start}
+.hstats div+div::before{display:none}
+.hstats b{background:none;-webkit-background-clip:initial;background-clip:initial;color:#fff;font-weight:600}
+.hstats span{color:rgba(255,255,255,.5)}
+/* الأهداف: قائمة مرقّمة */
+.aims{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.aims li{display:grid;grid-template-columns:56px 1fr;gap:18px;align-items:baseline;padding:22px 0;border-bottom:1px solid var(--line)}
+.aims .an{font-family:var(--f-head);font-size:34px;font-weight:700;color:var(--teal);line-height:1}
+.aims h4{font-size:18px;margin-bottom:4px}.aims p{color:var(--ink-2);font-size:15px;line-height:1.85}
+/* المجالات: بطاقات هادئة برقم كبير */
+.dom{padding:0;background:none;transform:none!important;transition:none}
+.dom:hover{box-shadow:none;background:none}
+.dom .in{border:1px solid var(--line);border-radius:22px;padding:34px 30px 30px}
+.dom .in::before,.dom::after{display:none}
+.dom .dn{display:block;font-family:var(--f-head);font-size:56px;font-weight:700;line-height:1;color:var(--teal);margin-bottom:22px}
+.dom h3{font-size:24px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+.dom ul{gap:0}
+.dom li{background:none;border:0;padding:0;font-size:13.5px;color:var(--teal-700)}
+.dom li+li::before{content:"·";margin:0 8px;color:var(--muted)}
+.dom.feat .in{border-color:transparent}
+.dom.feat .dn{color:#8fd3b8}.dom.feat h3{border-color:rgba(255,255,255,.12)}
+.dom.feat li{color:#bfe9d8;background:none}
+/* تهدئة الحركات واللمعات */
+.btn.shine::after{display:none}
+.nav .in::before{display:none}
+.cta-box{animation:none;background:linear-gradient(135deg,rgba(143,211,184,.5),rgba(46,49,67,.6))}
+.mock{animation:none}
+.pearl::after{display:none}
+.goal:hover,.cc:hover{transform:none}
+.news .it:hover{transform:none}
+@media (max-width:1060px){.stage{order:0;height:auto;padding:46px 0 10px}.stage .tilt img{height:190px}.stage .r1{width:260px;height:260px;top:20px}.stage .orb{width:260px;height:260px;top:20px}.hero .main{padding-top:118px}}
+@media (max-width:720px){.stage .tilt img{height:150px}.stage .r1,.stage .orb{width:210px;height:210px}}
