@@ -1,6 +1,6 @@
 /* ===== طبقة البيانات — تخزين محلي تجريبي قابل للاستبدال بقاعدة بيانات سحابية ===== */
 const S = (() => {
-  const KEY = 'sajaya.db.v5', SKEY = 'sajaya.session';
+  const KEY = 'sajaya.db.v6', SKEY = 'sajaya.session';
   const DAY = 864e5;
   let seed = 20261118;
   const rnd = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
@@ -128,12 +128,12 @@ const S = (() => {
     };
 
     const users = [
-      { id: 'u1', role: 'director', name: 'د. عبدالعزيز المنصور', email: 'director@sajaya.example' },
-      { id: 'u2', role: 'assistant', name: 'أ. سارة العتيبي', email: 'admin@sajaya.example' },
-      { id: 'u3', role: 'evaluator', name: 'د. هيفاء الراشد', email: 'eval1@sajaya.example' },
-      { id: 'u4', role: 'evaluator', name: 'د. ناصر الفيفي', email: 'eval2@sajaya.example' },
-      { id: 'u5', role: 'evaluator', name: 'أ. لطيفة البلوي', email: 'eval3@sajaya.example' },
-      ...assocs.map(a => ({ id: 'ua' + a.id.slice(1), role: 'assoc', name: a.rep.name, email: a.rep.email, assocId: a.id })),
+      { id: 'u1', roles: ['director'], name: 'د. عبدالعزيز المنصور', email: 'director@sajaya.example', phone: '0550000001' },
+      { id: 'u2', roles: ['assistant', 'evaluator'], name: 'أ. سارة العتيبي', email: 'admin@sajaya.example', phone: '0550000002' },
+      { id: 'u3', roles: ['evaluator'], name: 'د. هيفاء الراشد', email: 'eval1@sajaya.example', phone: '0550000003' },
+      { id: 'u4', roles: ['evaluator'], name: 'د. ناصر الفيفي', email: 'eval2@sajaya.example', phone: '0550000004' },
+      { id: 'u5', roles: ['evaluator'], name: 'أ. لطيفة البلوي', email: 'eval3@sajaya.example', phone: '0550000005' },
+      ...assocs.map(a => ({ id: 'ua' + a.id.slice(1), roles: ['assoc'], name: a.rep.name, email: a.rep.email, assocId: a.id })),
     ];
 
     const evals = { docs: {}, exec: {} };
@@ -148,13 +148,17 @@ const S = (() => {
     });
     // تقييم التنفيذ: جارٍ — بعض المقيّمين أنهوا جمعيات، ومسودة واحدة
     const execNotes = ['تنفيذ منتظم وتوثيق جيد، ويُوصى بتوسيع إشراك الأسر.', 'أثر واضح على المستفيدين، والشراكات تحتاج إلى تفعيل أكبر.', 'التزام زمني ممتاز، مع فرصة لتعميق برامج التميز الذاتي.'];
-    const execPlan = { u4: ['a1', 'a2', 'a3', 'a4', 'a5', 'a7'], u5: ['a1', 'a2', 'a3', 'a10'], u3: ['a2'] };
-    Object.entries(execPlan).forEach(([e, ids]) => ids.forEach(id => {
-      const a = assocs.find(x => x.id === id), base = .5 + .45 * a.p, scores = {};
+    // التكليف: الوثائق — اللجنة الثلاثية كاملة لكل جمعية؛ التنفيذ — مقيّمان لكل جمعية بالتناوب
+    const assign = { docs: {}, exec: {} };
+    assocs.slice(0, 18).forEach(a => assign.docs[a.id] = ['u3', 'u4', 'u5']);
+    const pool = ['u4', 'u5', 'u3', 'u2'];
+    assocs.filter(a => a.status === 'accepted').forEach((a, i) => assign.exec[a.id] = [pool[i % 4], pool[(i + 1) % 4]]);
+    Object.entries(assign.exec).forEach(([id, es], i) => es.forEach((e, j) => {
+      if (i > 8 || (i > 5 && j === 1)) return; // جمعيات لم يكتمل تقييمها بعد
+      const a = assocs.find(x => x.id === id), base = .5 + .45 * a.p + (j ? .06 : -.02) * (i === 3 ? 4 : 1), scores = {};
       tracks.exec.criteria.forEach(c => c.inds.forEach(n => scores[n.id] = Math.max(1, Math.min(n.max, Math.round(n.max * (base + (rnd() - .5) * .2))))));
-      (evals.exec[id] = evals.exec[id] || {})[e] = { scores, note: pick(execNotes), done: true, at: T(-1 + rnd()) };
+      (evals.exec[id] = evals.exec[id] || {})[e] = { scores, note: pick(execNotes), done: !(i === 8 && j === 1), at: T(-1 + rnd()) };
     }));
-    { const scores = {}; tracks.exec.criteria.slice(0, 3).forEach(c => c.inds.forEach(n => scores[n.id] = Math.round(n.max * .8))); evals.exec.a1.u3 = { scores, note: '', done: false, at: T(-.3) }; }
 
     const mt = [
       ['اللقاء التعريفي بمبادرة سجايا', -121, 'تأكيد الرغبة في المشاركة'],
@@ -189,20 +193,46 @@ const S = (() => {
       ['u1', 'تثبيت نسخة المعايير', 'تقييم الوثائق — النسخة 1', -69], ['u2', 'إرسال رابط تفعيل', 'جمعية ضياء', -6],
     ].map(x => ({ id: uid(), user: x[0], action: x[1], target: x[2], at: T(x[3]) })).sort((a, b) => b.at.localeCompare(a.at));
 
-    return { v: 5, seededAt: now, cycle: 'الدورة الأولى ١٤٤٨هـ', stages, requirements, assocs, subs, tracks, evals, users, meetings, notifs, audit };
+    const settings = {
+      minEvaluators: 2, gapAlert: 15, weights: { docs: 30, exec: 70 }, assistantCanScore: false,
+      contact: { whatsapp: '0503700028', email: 'info@itmaam.org.sa', site: 'https://itmaam.org.sa' },
+      templates: {
+        general: { title: 'رسالة عامة', subject: 'مبادرة سجايا — {الجمعية}', body: 'السلام عليكم ورحمة الله وبركاته\nالأستاذ/ة {الممثل} — {الجمعية}\n\n\n\nمع خالص التحية،\nإدارة مبادرة سجايا' },
+        reminder: { title: 'تذكير بمتطلب', subject: 'تذكير: {المتطلب} — مبادرة سجايا', body: 'السلام عليكم ورحمة الله وبركاته\nالأستاذ/ة {الممثل} — {الجمعية}\n\nنذكّركم بأن موعد تسليم «{المتطلب}» هو {الموعد}، ونأمل رفعه عبر المنصة:\n{الرابط}\n\nشاكرين تعاونكم،\nإدارة مبادرة سجايا' },
+        revise: { title: 'طلب تعديل ملف', subject: 'ملاحظة على «{المتطلب}» — مبادرة سجايا', body: 'السلام عليكم ورحمة الله وبركاته\nالأستاذ/ة {الممثل} — {الجمعية}\n\nبعد مراجعة «{المتطلب}» نأمل التكرم بما يلي:\n{الملاحظة}\n\nويمكنكم إعادة الرفع من المنصة:\n{الرابط}\n\nإدارة مبادرة سجايا' },
+        late: { title: 'متطلبات متأخرة', subject: 'متطلبات متأخرة — {الجمعية}', body: 'السلام عليكم ورحمة الله وبركاته\nالأستاذ/ة {الممثل} — {الجمعية}\n\nلاحظنا وجود {العدد} متطلبات متأخرة عن موعدها، نأمل استكمالها في أقرب وقت عبر المنصة:\n{الرابط}\n\nونسعد بمساعدتكم في أي استفسار.\nإدارة مبادرة سجايا' },
+        meeting: { title: 'دعوة لقاء', subject: 'دعوة: {اللقاء}', body: 'السلام عليكم ورحمة الله وبركاته\nالأستاذ/ة {الممثل} — {الجمعية}\n\nيسعدنا دعوتكم لحضور «{اللقاء}» يوم {الموعد}.\nرابط اللقاء: {رابط_اللقاء}\n\nإدارة مبادرة سجايا' },
+        login: { title: 'رابط الدخول', subject: 'الدخول إلى منصة سجايا', body: 'السلام عليكم ورحمة الله وبركاته\nالأستاذ/ة {الممثل} — {الجمعية}\n\nيمكنكم الدخول إلى حساب الجمعية في منصة سجايا عبر الرابط:\n{الرابط}\n\nإدارة مبادرة سجايا' },
+        evaluator: { title: 'تكليف مقيّم', subject: 'تكليف بالتقييم — مبادرة سجايا', body: 'السلام عليكم ورحمة الله وبركاته\nسعادة {المقيم}\n\nتم تكليفكم بتقييم {العدد} جمعيات في «{المسار}». يمكنكم البدء من صفحة مهام التقييم:\n{الرابط}\n\nشاكرين لكم،\nإدارة مبادرة سجايا' },
+        toAdmin: { title: 'من الجمعية إلى الإدارة', subject: 'استفسار من {الجمعية}', body: 'السلام عليكم ورحمة الله وبركاته\nإدارة مبادرة سجايا الموقرة\n\nمعكم {الممثل} من {الجمعية}، ولدينا استفسار بخصوص:\n\n\nشاكرين لكم.' },
+      },
+    };
+    return { v: 6, seededAt: now, settings, assign, cycle: 'الدورة الأولى ١٤٤٨هـ', stages, requirements, assocs, subs, tracks, evals, users, meetings, notifs, audit };
   }
 
   let db;
-  function load() { try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) { db = null; } if (!db || db.v !== 5) { db = build(); save(); } }
+  function load() { try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) { db = null; } if (!db || db.v !== 6) { db = build(); save(); } }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { } }
   function reset() { db = build(); save(); }
   load();
 
-  /* الجلسة */
-  const user = () => { try { return db.users.find(u => u.id === sessionStorage.getItem(SKEY)) || null; } catch (e) { return null; } };
+  /* الجلسة والأدوار — يمكن للمستخدم أن يحمل أكثر من دور */
+  const ORDER = ['director', 'assistant', 'evaluator', 'assoc'];
+  const rolesOf = u => (u && (u.roles || (u.role ? [u.role] : []))) || [];
+  const primary = u => ORDER.find(r => rolesOf(u).includes(r)) || 'assoc';
+  const has = (u, r) => rolesOf(u).includes(r);
+  const isAdmin = u => has(u, 'director') || has(u, 'assistant');
+  const user = () => { try { const u = db.users.find(x => x.id === sessionStorage.getItem(SKEY)); if (u) u.role = primary(u); return u || null; } catch (e) { return null; } };
   const login = id => sessionStorage.setItem(SKEY, id);
   const logout = () => sessionStorage.removeItem(SKEY);
-  const can = p => { const u = user(); if (!u) return false; if (u.role === 'director') return true; if (u.role === 'assistant') return !['approve', 'users'].includes(p); if (u.role === 'evaluator') return p === 'evaluate'; return false; };
+  // صلاحيات: اتحاد صلاحيات أدوار المستخدم
+  const PERMS = {
+    director: ['dashboard', 'assocs', 'stages', 'files', 'meetings', 'notify', 'reports', 'audit', 'settings', 'criteria', 'approve', 'users', 'assign', 'reopen'],
+    assistant: ['dashboard', 'assocs', 'stages', 'files', 'meetings', 'notify', 'reports', 'audit', 'settings', 'assign', 'reopen'],
+    evaluator: ['evaluate'], assoc: ['assoc'],
+  };
+  const can = p => { const u = user(); return !!u && rolesOf(u).some(r => PERMS[r].includes(p)); };
+  const normPhone = ph => { const d = String(ph || '').replace(/\D/g, ''); return d.startsWith('966') ? d : d.startsWith('05') ? '966' + d.slice(1) : d.startsWith('5') && d.length === 9 ? '966' + d : d; };
 
   /* أدوات */
   const today = () => new Date().toISOString().slice(0, 10);
@@ -233,30 +263,54 @@ const S = (() => {
   const HEALTH = { ok: { t: 'تسير وفق الخطة', c: 'ok' }, warn: { t: 'تحتاج إلى استكمال بعض المتطلبات', c: 'warn' }, bad: { t: 'متأخرة عن الخطة', c: 'bad' }, off: { t: 'خارج المنافسة', c: '' } };
   function stageProgress(a, s) { const rs = reqsFor(a).filter(r => r.stage === s.id); if (!rs.length) return stageState(a, s) === 'done' ? 100 : 0; return Math.round(rs.filter(r => sub(a.id, r.id).status === 'approved').length / rs.length * 100); }
 
-  /* التقييم */
+  /* التقييم — يُحتسب من المقيّمين المكلَّفين فقط */
   const trackMax = k => db.tracks[k].criteria.reduce((t, c) => t + c.inds.reduce((x, n) => x + (+n.max || 0), 0), 0);
+  const evaluatorsAll = () => db.users.filter(u => has(u, 'evaluator'));
+  const assigned = (k, aId) => ((db.assign[k] || {})[aId] || []).filter(id => db.users.some(u => u.id === id));
   const evalOf = (k, aId, eId) => (db.evals[k][aId] || {})[eId] || null;
   const evalTotal = e => e ? Object.values(e.scores).reduce((t, v) => t + (+v || 0), 0) : 0;
-  const doneEvals = (k, aId) => Object.values(db.evals[k][aId] || {}).filter(e => e.done);
+  const doneEvals = (k, aId) => assigned(k, aId).map(e => evalOf(k, aId, e)).filter(e => e && e.done);
+  function evalState(k, aId) {
+    const as = assigned(k, aId), es = doneEvals(k, aId), mx = trackMax(k), tot = es.map(evalTotal);
+    const drafts = as.filter(e => { const x = evalOf(k, aId, e); return x && !x.done; }).length;
+    const gap = tot.length > 1 ? Math.round((Math.max(...tot) - Math.min(...tot)) / mx * 100) : 0;
+    const complete = as.length >= (db.settings.minEvaluators || 1) && es.length === as.length;
+    return { n: as.length, done: es.length, drafts, complete, short: as.length < (db.settings.minEvaluators || 1), gap, gapHigh: gap >= (db.settings.gapAlert || 100) };
+  }
   function trackScore(k, aId) { const es = doneEvals(k, aId); return es.length ? +(es.reduce((t, e) => t + evalTotal(e), 0) / es.length).toFixed(1) : null; }
-  function critScores(k, aId) { const es = doneEvals(k, aId); return db.tracks[k].criteria.map(c => { const max = c.inds.reduce((t, n) => t + n.max, 0); const sc = es.length ? es.reduce((t, e) => t + c.inds.reduce((x, n) => x + (+e.scores[n.id] || 0), 0), 0) / es.length : null; return { id: c.id, name: c.name, max, score: sc === null ? null : +sc.toFixed(1) }; }); }
-  const ranking = k => db.assocs.map(a => ({ a, score: trackScore(k, a.id) })).filter(x => x.score !== null).sort((x, y) => y.score - x.score);
+  const trackPct = (k, aId) => { const s = trackScore(k, aId); return s === null ? null : +(s / trackMax(k) * 100).toFixed(1); };
+  function critScores(k, aId) { const es = doneEvals(k, aId); return db.tracks[k].criteria.map(c => { const max = c.inds.reduce((t, n) => t + n.max, 0); const sc = es.length ? es.reduce((t, e) => t + c.inds.reduce((x, n) => x + (+e.scores[n.id] || 0), 0), 0) / es.length : null; return { id: c.id, name: c.name, max, score: sc === null ? null : +sc.toFixed(1), pct: sc === null ? null : Math.round(sc / max * 100) }; }); }
+  // ترتيب تنافسي: المتساوون في الدرجة يتشاركون المركز (١، ١، ٣...)
+  function rankList(items) { items.sort((x, y) => y.score - x.score); items.forEach((x, i) => x.rank = i && items[i - 1].score === x.score ? items[i - 1].rank : i + 1); return items; }
+  const ranking = (k, onlyComplete) => rankList(db.assocs.map(a => ({ a, score: trackScore(k, a.id), pct: trackPct(k, a.id), st: evalState(k, a.id) })).filter(x => x.score !== null && (!onlyComplete || x.st.complete)));
+  // المؤشر النهائي للتميز: مزيج موزون من نسبتي المسارين
+  function finalIndex(aId) { const w = db.settings.weights, d = trackPct('docs', aId), e = trackPct('exec', aId); if (d === null || e === null) return null; return +((d * w.docs + e * w.exec) / (w.docs + w.exec)).toFixed(1); }
+  const finalRanking = () => rankList(db.assocs.map(a => ({ a, score: finalIndex(a.id) })).filter(x => x.score !== null));
   function domainPerf(aId) {
     const acc = { v: [0, 0], h: [0, 0], s: [0, 0] };
     Object.keys(db.tracks).forEach(k => { const es = doneEvals(k, aId); if (!es.length) return; db.tracks[k].criteria.forEach(c => c.inds.forEach(n => { if (n.dom) { acc[n.dom][0] += es.reduce((t, e) => t + (+e.scores[n.id] || 0), 0) / es.length; acc[n.dom][1] += n.max; } })); });
     const o = {}; Object.keys(acc).forEach(d => o[d] = acc[d][1] ? Math.round(acc[d][0] / acc[d][1] * 100) : null); return o;
   }
   const visibleToAssoc = k => db.tracks[k].approved && db.tracks[k].published;
+  // من يملك تعديل ورقة تقييم: المقيّم المكلَّف نفسه، أو المساعد إن سُمح له بالإدخال نيابةً
+  function canScore(u, k, aId, eId) {
+    if (!u || db.tracks[k].approved || !db.tracks[k].locked || !assigned(k, aId).includes(eId)) return false;
+    if (u.id === eId && has(u, 'evaluator')) return true;
+    return !!db.settings.assistantCanScore && has(u, 'assistant');
+  }
 
   /* سجل وإشعارات */
   function log(action, target) { const u = user(); db.audit.unshift({ id: uid(), user: u ? u.id : '-', action, target, at: new Date().toISOString() }); save(); }
   function notify(to, type, title, body) { const u = user(); db.notifs.unshift({ id: uid(), to, type, title, body, at: new Date().toISOString(), by: u ? u.id : '-', read: {} }); save(); }
-  function notifsFor(u) { if (!u) return []; return db.notifs.filter(n => u.role === 'assoc' ? (n.to === 'all' || n.to === u.assocId) : n.to === 'admin'); }
+  function notifsFor(u) { if (!u) return []; return db.notifs.filter(n => has(u, 'assoc') ? (n.to === 'all' || n.to === u.assocId) : ((isAdmin(u) && n.to === 'admin') || n.to === 'u:' + u.id)); }
   const unread = u => notifsFor(u).filter(n => !n.read[u.id]).length;
 
+  /* القوالب */
+  function fill(key, ctx) { const t = db.settings.templates[key] || db.settings.templates.general, f = x => String(x || '').replace(/\{([^}]+)\}/g, (m, k2) => ctx[k2] !== undefined ? ctx[k2] : m); return { subject: f(t.subject), body: f(t.body) }; }
+
   return {
-    get db() { return db; }, save, reset, uid, user, login, logout, can, today, assoc, stage, req, userById, cap, reqsFor, sub, globalStage, currentStage, stageState, stats, stageProgress,
-    trackMax, evalOf, evalTotal, doneEvals, trackScore, critScores, ranking, domainPerf, visibleToAssoc, log, notify, notifsFor, unread,
+    get db() { return db; }, save, reset, uid, user, login, logout, can, has, isAdmin, rolesOf, primary, normPhone, today, assoc, stage, req, userById, cap, reqsFor, sub, globalStage, currentStage, stageState, stats, stageProgress,
+    trackMax, evaluatorsAll, assigned, evalOf, evalTotal, doneEvals, evalState, trackScore, trackPct, critScores, ranking, finalIndex, finalRanking, domainPerf, visibleToAssoc, canScore, log, notify, notifsFor, unread, fill,
     STATUS, FSTATUS, ROLES, DOMAINS, CATS, HEALTH, DAY,
   };
 })();

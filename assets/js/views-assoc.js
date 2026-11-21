@@ -9,7 +9,7 @@ V.home = () => {
   const news = S.notifsFor(u).slice(0, 3), nextM = S.db.meetings.filter(m => m.date >= S.today()).sort((x, y) => x.date.localeCompare(y.date))[0];
   return {
     title: 'لوحة الجمعية', crumb: esc(a.name),
-    html: `<div class="hello">${av(a.short, 'lg')}<div><p>مرحبًا بكم في منصة سجايا</p><h2>${esc(a.name)}</h2><p class="mt8">${stBadge(a)}</p></div>
+    html: `<div class="hello">${av(a.short, 'lg')}<div><p>مرحبًا بكم في منصة سجايا</p><h2>${esc(a.name)}</h2><p class="mt8">${stBadge(a)}</p></div><button class="btn sm glass2 hello-ct" onclick="A.contactAdmin()">${waIcon('sm')} تواصل مع إدارة المبادرة</button>
       ${a.status === 'accepted' ? `<div class="hl" title="قاعدة التصنيف: أخضر بلا متطلبات إلزامية متأخرة · أصفر إذا لم يتجاوز المتأخر ٢٠٪ من المستحق · أحمر إذا تجاوز ٢٠٪"><span class="dot ${st.health}"></span><span><b>${S.HEALTH[st.health].t}</b><small>${st.overdue ? AR(st.overdue) + ' متطلبات متأخرة من ' + AR(st.due) + ' مستحقة' : 'لا توجد متطلبات متأخرة'}</small></span></div>` : ''}</div>
     <div class="grid g3 sect">
       ${kpi('target', pct(st.progress), 'مستوى الإنجاز العام')}
@@ -99,9 +99,9 @@ V['my-results'] = () => {
     html: Object.values(S.db.tracks).map(t => {
       const k = t.key, sc = S.trackScore(k, a.id);
       if (!S.visibleToAssoc(k) || sc === null) return `<div class="card sect"><div class="hd"><h3>${t.name}</h3>${badge(!t.locked ? { t: 'لم يبدأ', c: '' } : sc === null && S.visibleToAssoc(k) ? { t: 'غير مشمولة', c: '' } : { t: 'قيد التقييم', c: 'warn' })}</div><div class="lockbox"><div class="lk">${icon('lock', 'lg')}</div><h3>${!t.locked ? 'لم تبدأ هذه المرحلة من التقييم' : 'النتائج غير معلنة بعد'}</h3><p class="muted mt8">تظهر الدرجات والترتيب والملاحظات بعد اعتماد النتائج وإعلانها رسميًا من إدارة المبادرة.</p></div></div>`;
-      const rk = S.ranking(k), pos = rk.findIndex(x => x.a.id === a.id) + 1, max = S.trackMax(k), notes = S.doneEvals(k, a.id).map(e => e.note).filter(Boolean);
+      const rk = S.ranking(k), me_ = rk.find(x => x.a.id === a.id), pos = me_ ? me_.rank : 0, max = S.trackMax(k), notes = S.doneEvals(k, a.id).map(e => e.note).filter(Boolean);
       return `<div class="card sect"><div class="hd"><h3>${t.name}</h3><div class="row">${badge({ t: 'نتائج معتمدة', c: 'ok' })}<a class="btn sm soft" href="#/report/eval/${k}/${a.id}">${icon('file', 'sm')} تقرير التقييم</a></div></div>
-        <div class="bd grid cols2" style="grid-template-columns:260px 1fr;gap:28px;align-items:center"><div class="center" style="display:grid;place-items:center;gap:10px">${ring(Math.round(sc / max * 100), 180, `${AR(sc)} من ${AR(max)}`)}<div class="row" style="gap:8px">${rankB(pos - 1)}<span class="small">الترتيب ${AR(pos)} من ${AR(rk.length)}</span></div></div>
+        <div class="bd grid cols2" style="grid-template-columns:260px 1fr;gap:28px;align-items:center"><div class="center" style="display:grid;place-items:center;gap:10px">${ring(Math.round(sc / max * 100), 180, `${AR(sc)} من ${AR(max)}`)}<div class="row" style="gap:8px">${rankB(pos)}<span class="small">الترتيب ${AR(pos)} من ${AR(rk.length)}</span></div></div>
         <div>${S.critScores(k, a.id).map(c => hbar(c.name, c.score, c.max, `${AR(c.score)} / ${AR(c.max)}`)).join('')}</div></div>
         ${notes.length ? `<div class="bd" style="border-top:1px solid var(--line-2)"><b class="small">ملاحظات وتوصيات لجنة التقييم</b><ul style="margin:8px 0 0;padding-inline-start:20px;line-height:2;color:var(--ink-2)">${notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>` : ''}</div>`;
     }).join(''),

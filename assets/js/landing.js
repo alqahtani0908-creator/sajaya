@@ -13,8 +13,19 @@
 
   /* شريط القيم */
   const vals = ['الصدق', 'الرحمة', 'الأمانة', 'النبل', 'الصفاء', 'الوفاء', 'الحياء', 'الكرم', 'بر الوالدين', 'الشجاعة', 'السنع', 'المروءة'];
-  const chunk = vals.map(v => `<span>${v}</span>`).join('');
-  $('#marq').innerHTML = chunk + chunk + chunk + chunk;
+  // عِقد السجايا: كل قيمة لؤلؤة منظومة في خيط، صفّان بحركتين متعاكستين
+  const bead = v => `<span class="bead"><i class="pearl" aria-hidden="true"></i><span>${v}</span></span>`;
+  const half = Math.ceil(vals.length / 2), r1 = vals.slice(0, half).concat(vals.slice(half)), r2 = vals.slice(half).concat(vals.slice(0, half));
+  $('#nk1').innerHTML = (r1.map(bead).join('')).repeat(4); $('#nk2').innerHTML = (r2.map(bead).join('')).repeat(4);
+
+  /* التواصل من إعدادات المنصة */
+  const C = (S.db.settings || {}).contact || { whatsapp: '0503700028', email: 'info@itmaam.org.sa', site: 'https://itmaam.org.sa' };
+  const wa = d => { d = String(d).replace(/\D/g, ''); return d.startsWith('966') ? d : d.startsWith('05') ? '966' + d.slice(1) : d; };
+  const fmtPh = d => String(d).replace(/\D/g, '').replace(/^(\d{3})(\d{3})(\d{4})$/, '$1 $2 $3');
+  $('#ctWa').href = 'https://wa.me/' + wa(C.whatsapp) + '?text=' + encodeURIComponent('السلام عليكم ورحمة الله وبركاته\nأرغب في الاستفسار عن مبادرة سجايا.');
+  $('#ctWaN').textContent = fmtPh(C.whatsapp);
+  $('#ctMail').href = 'mailto:' + C.email + '?subject=' + encodeURIComponent('استفسار عن مبادرة سجايا'); $('#ctMailN').textContent = C.email;
+  $('#ctSite').href = C.site; $('#ctSiteN').textContent = C.site.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
   /* المراحل */
   const gs = S.globalStage(), stages = S.db.stages, acc = S.db.assocs.filter(a => a.status === 'accepted');
@@ -35,9 +46,14 @@
   /* الظهور عند التمرير */
   const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; e.target.classList.add('in'); $$('[data-count]').forEach(c => { if (e.target.contains(c) && !c.done) { c.done = 1; count(c); } }); io.unobserve(e.target); }), { threshold: .14, rootMargin: '0px 0px -40px 0px' });
   $$('.reveal').forEach(el => { const sib = [...el.parentElement.children].filter(x => x.classList.contains('reveal')); el.style.transitionDelay = (sib.indexOf(el) * 90) + 'ms'; io.observe(el); });
-  setTimeout(() => $$('.chip [data-count]').forEach(c => { c.done = 1; count(c); }), RM ? 0 : 1500);
+  setTimeout(() => $$('.chip [data-count], .hstats [data-count]').forEach(c => { c.done = 1; count(c); }), RM ? 0 : 1500);
 
   /* التمرير: الشريط العلوي، التنقل، الخط الزمني */
+  /* مؤشّر منزلق خلف روابط الشريط: يتبع الرابط النشط ويلحق بالمؤشر عند التمرير فوق الروابط */
+  const ind = $('#ind'); let hov = null;
+  const moveInd = a => { if (!ind) return; if (!a) { ind.style.opacity = 0; return; } const p = a.parentElement.getBoundingClientRect(), r = a.getBoundingClientRect(); ind.style.opacity = 1; ind.style.width = r.width + 'px'; ind.style.transform = `translateX(${r.left - p.left}px)`; };
+  $$('#links a').forEach(a => { a.addEventListener('pointerenter', () => { hov = a; moveInd(a); }); a.addEventListener('pointerleave', () => { hov = null; moveInd($$('#links a').find(x => x.classList.contains('on'))); }); });
+  addEventListener('resize', () => moveInd($$('#links a').find(x => x.classList.contains('on'))));
   const nav = $('#nav'), bar = $('#progress'), top = $('#totop'), fill = $('#tlFill'), tl = $('#tl'), secs = $$('main section[id]'), links = $$('#links a');
   const onScroll = () => {
     const y = scrollY, h = document.documentElement.scrollHeight - innerHeight;
@@ -48,6 +64,7 @@
     $$('.st').forEach(s => { const sr = s.getBoundingClientRect(); s.classList.toggle('lit', sr.top + 30 < innerHeight * .6); });
     let cur = ''; secs.forEach(s => { if (s.getBoundingClientRect().top < 140) cur = s.id; });
     links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + cur));
+    if (!hov) moveInd(links.find(a => a.classList.contains('on')));
   };
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
   top.onclick = () => scrollTo({ top: 0, behavior: 'smooth' });

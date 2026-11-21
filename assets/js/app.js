@@ -9,45 +9,55 @@ const ACCESS = {
 };
 const HOME = { director: 'dashboard', assistant: 'dashboard', evaluator: 'eval-home', assoc: 'home' };
 const go = p => { location.hash = '#/' + p; };
+const allowed = (u, name) => S.rolesOf(u).some(r => ACCESS[name].includes(r));
 let lastRoute = '';
 
+// القائمة تُبنى من اتحاد أدوار المستخدم، فمن يجمع «مساعد إداري + مقيّم» يرى الأقسام معًا دون تكرار
 function navFor(u) {
-  if (u.role === 'assoc') return [
+  if (S.has(u, 'assoc')) return [
     ['', [['home', 'home', 'لوحة الجمعية'], ['requirements', 'clipboard', 'المتطلبات والملفات'], ['my-meetings', 'video', 'اللقاءات والمهام'], ['my-results', 'award', 'نتائج التقييم']]],
     ['المتابعة', [['alerts', 'bell', 'التنبيهات', S.unread(u)], ['report/assoc/' + u.assocId, 'chart', 'تقرير الأداء'], ['profile', 'building', 'بيانات الجمعية']]],
   ];
-  if (u.role === 'evaluator') return [['', [['eval-home', 'star', 'مهام التقييم']]]];
-  const pend = Object.values(S.db.subs).filter(s => s.status === 'pending').length;
-  return [
-    ['', [['dashboard', 'grid', 'لوحة المؤشرات']]],
-    ['إدارة المبادرة', [['associations', 'building', 'الجمعيات'], ['stages', 'layers', 'المراحل والمتطلبات'], ['files', 'file', 'الوثائق والشواهد', pend], ['meetings', 'video', 'اللقاءات والمهام']]],
-    ['التقييم', [['evaluation', 'award', 'التقييم والنتائج']]],
-    ['التواصل والتقارير', [['notifications', 'bell', 'الإشعارات والمراسلات', S.unread(u)], ['reports', 'chart', 'التقارير']]],
-    ['النظام', [['audit', 'history', 'سجل العمليات'], ['settings', 'settings', 'الإعدادات والصلاحيات']]],
-  ];
+  const out = [], adm = S.isAdmin(u);
+  const myTasks = S.has(u, 'evaluator') ? Object.keys(S.db.tracks).reduce((t, k) => t + (S.db.tracks[k].locked && !S.db.tracks[k].approved ? Object.keys(S.db.assign[k] || {}).filter(id => S.assigned(k, id).includes(u.id) && !(S.evalOf(k, id, u.id) || {}).done).length : 0), 0) : 0;
+  if (adm) {
+    const pend = Object.values(S.db.subs).filter(s => s.status === 'pending').length;
+    out.push(['', [['dashboard', 'grid', 'لوحة المؤشرات']]],
+      ['إدارة المبادرة', [['associations', 'building', 'الجمعيات'], ['stages', 'layers', 'المراحل والمتطلبات'], ['files', 'file', 'الوثائق والشواهد', pend], ['meetings', 'video', 'اللقاءات والمهام']]]);
+  }
+  const ev = [];
+  if (adm) ev.push(['evaluation', 'award', 'التقييم والنتائج']);
+  if (S.has(u, 'evaluator')) ev.push(['eval-home', 'star', 'مهام التقييم', myTasks]);
+  out.push([adm ? 'التقييم' : '', ev]);
+  if (adm) out.push(['التواصل والتقارير', [['notifications', 'bell', 'الإشعارات والمراسلات', S.unread(u)], ['reports', 'chart', 'التقارير']]],
+    ['النظام', [['audit', 'history', 'سجل العمليات'], ['settings', 'settings', 'الإعدادات والصلاحيات']]]);
+  return out;
 }
+const roleChips = u => S.rolesOf(u).map(r => `<span class="rchip">${S.ROLES[r]}</span>`).join('');
 
 function shell(u, name, v) {
   const a = u.assocId ? S.assoc(u.assocId) : null;
   const cur = location.hash.replace(/^#\/?/, '');
-  const nav = navFor(u).map(([g, items]) => (g ? `<div class="grp">${g}</div>` : '') + items.map(([p, ic, t, ct]) => `<a class="ni ${cur === p || name === p || (p === 'associations' && name === 'association') || (p === 'evaluation' && name === 'evaluate' && u.role !== 'evaluator') || (p === 'eval-home' && name === 'evaluate') || (p === 'reports' && name === 'report' && u.role !== 'assoc') ? 'on' : ''}" href="#/${p}">${icon(ic)}<span>${t}</span>${ct ? `<span class="ct num">${AR(ct)}</span>` : ''}</a>`).join('')).join('');
-  const demoAcc = [['u1', 'مدير المبادرة'], ['u2', 'المساعد الإداري'], ['u3', 'لجنة التقييم'], ['ua1', 'جمعية مشاركة']];
+  const isOn = p => cur === p || name === p || (p === 'associations' && name === 'association') || (p === 'evaluation' && name === 'evaluate' && !cur.includes('/mine')) || (p === 'eval-home' && name === 'evaluate' && cur.includes('/mine')) || (p === 'reports' && name === 'report' && !S.has(u, 'assoc'));
+  const nav = navFor(u).map(([g, items]) => (g ? `<div class="grp">${g}</div>` : '') + items.map(([p, ic, t, ct]) => `<a class="ni ${isOn(p) ? 'on' : ''}" href="#/${p}">${icon(ic)}<span>${t}</span>${ct ? `<span class="ct num">${AR(ct)}</span>` : ''}</a>`).join('')).join('');
+  const demoAcc = [['u1', 'مدير المبادرة'], ['u2', 'مساعد إداري + مقيّمة'], ['u3', 'عضو لجنة التقييم'], ['ua1', 'جمعية مشاركة']];
+  const bell = S.has(u, 'assoc') ? 'alerts' : S.isAdmin(u) ? 'notifications' : 'eval-home';
   return `<div class="shell" id="shell">
     <aside class="side">
       <a class="brand" href="index.html" style="color:#fff"><img src="assets/img/icon-white.svg" alt=""><span><b>منصة سجايا</b><small>قيم أصيلة.. وطباع نبيلة</small></span></a>
       <nav>${nav}</nav>
       <div class="spons"><div><small>تنفيذ</small><img src="assets/img/partners/itmam-white.png" alt="جمعية إتمام للتمكين القيمي للأيتام"></div><div><small>برعاية</small><img src="assets/img/partners/majed-logo-white.svg" alt="مؤسسة أبناء علي بن عثمان الماجد الأهلية"></div></div>
-      <div class="me">${av(a ? a.short : u.name)}<span><b>${esc(a ? a.name : u.name)}</b><small>${esc(a ? u.name : S.ROLES[u.role])}</small></span><button onclick="A.logout()" title="تسجيل الخروج" aria-label="تسجيل الخروج">${icon('logout')}</button></div>
+      <div class="me">${av(a ? a.short : u.name)}<span><b>${esc(a ? a.name : u.name)}</b><small>${a ? esc(u.name) : roleChips(u)}</small></span><button onclick="A.logout()" title="تسجيل الخروج" aria-label="تسجيل الخروج">${icon('logout')}</button></div>
     </aside>
     <div class="scrim" onclick="$('#shell').classList.remove('nav-open')"></div>
     <div class="main">
       <header class="top">
         <button class="btn sm icon ghost burger" onclick="$('#shell').classList.toggle('nav-open')" aria-label="القائمة">${icon('menu')}</button>
-        <div><div class="crumb">${esc(S.db.cycle)} ${v.crumb ? ' / ' + v.crumb : ''}</div><h1>${v.title}</h1></div>
-        <div class="sp"></div>
+        <div class="grow" style="min-width:0"><div class="crumb">${esc(S.db.cycle)} ${v.crumb ? ' / ' + v.crumb : ''}</div><h1>${v.title}</h1></div>
+        <button class="searchbtn noprint" onclick="A.palette()" aria-label="بحث سريع">${icon('search', 'sm')}<span>ابحث أو انتقل…</span><kbd>⌘K</kbd></button>
         <span class="demo-tag">عرض تجريبي</span>
-        <select class="input sm noprint" style="width:auto" onchange="A.switchUser(this.value)" title="تبديل الدور للعرض التجريبي" aria-label="تبديل الدور">${demoAcc.map(([id, t]) => opt(id, t, demoAcc.some(d => d[0] === u.id) ? u.id : (u.role === 'assoc' ? 'ua1' : 'u3'))).join('')}</select>
-        <a class="btn sm icon ghost bellb" href="#/${u.role === 'assoc' ? 'alerts' : u.role === 'evaluator' ? 'eval-home' : 'notifications'}" aria-label="التنبيهات">${icon('bell')}${S.unread(u) ? '<i></i>' : ''}</a>
+        <select class="input sm noprint" style="width:auto" onchange="A.switchUser(this.value)" title="تبديل الحساب للعرض التجريبي" aria-label="تبديل الحساب">${demoAcc.map(([id, t]) => opt(id, t, demoAcc.some(d => d[0] === u.id) ? u.id : (S.has(u, 'assoc') ? 'ua1' : 'u3'))).join('')}</select>
+        <a class="btn sm icon ghost bellb" href="#/${bell}" aria-label="التنبيهات">${icon('bell')}${S.unread(u) ? '<i></i>' : ''}</a>
       </header>
       <main class="page">${v.html}</main>
     </div>
@@ -60,7 +70,7 @@ function render() {
   closeModal();
   if (AUTH[name]) { app.innerHTML = AUTH[name](...parts.slice(1)); return; }
   if (!u) return go('login');
-  if (!V[name] || !ACCESS[name].includes(u.role)) return go(HOME[u.role]);
+  if (!V[name] || !allowed(u, name)) return go(HOME[u.role]);
   const v = V[name](...parts.slice(1));
   if (!v) return go(HOME[u.role]);
   const keep = lastRoute === location.hash ? scrollY : 0; lastRoute = location.hash;
@@ -73,6 +83,27 @@ function render() {
 const R = render;
 addEventListener('hashchange', render);
 addEventListener('DOMContentLoaded', render);
+
+/* البحث السريع: صفحات وجمعيات وإجراءات — ⌘K / Ctrl+K */
+A.palette = () => {
+  const u = S.user(); if (!u) return;
+  const items = [];
+  navFor(u).forEach(([, its]) => its.forEach(([p, ic, t]) => items.push({ t, s: 'صفحة', ic, go: p })));
+  if (S.isAdmin(u)) {
+    S.db.assocs.forEach(a => items.push({ t: a.name, s: a.city + ' · ' + S.STATUS[a.status].t, ic: 'building', go: 'association/' + a.id }));
+    items.push({ t: 'مراجعة الملفات المعلّقة', s: 'إجراء', ic: 'check', go: 'files' }, { t: 'مراسلة الجمعيات المتأخرة', s: 'إجراء', ic: 'send', run: () => A.contactLate() }, { t: 'إضافة متطلب جديد', s: 'إجراء', ic: 'plus', run: () => { go('stages'); setTimeout(() => A.reqForm(), 60); } }, { t: 'توزيع المقيّمين', s: 'إجراء', ic: 'users', go: 'evaluation/exec/assign' }, { t: 'قوالب الرسائل', s: 'الإعدادات', ic: 'mail', go: 'settings/messages' });
+  }
+  if (S.has(u, 'evaluator')) Object.keys(S.db.tracks).forEach(k => Object.keys(S.db.assign[k] || {}).forEach(id => { if (S.assigned(k, id).includes(u.id) && S.db.tracks[k].locked) items.push({ t: S.assoc(id).name, s: 'تقييمي · ' + S.db.tracks[k].short, ic: 'star', go: `evaluate/${k}/${id}/mine` }); }));
+  modal('', `<div class="pal"><div class="palin">${icon('search')}<input id="palQ" placeholder="اكتب اسم جمعية أو صفحة أو إجراء…" autocomplete="off"></div><div class="pall" id="palL"></div><div class="palf"><span><kbd>↑</kbd><kbd>↓</kbd> للتنقل</span><span><kbd>Enter</kbd> للفتح</span><span><kbd>Esc</kbd> للإغلاق</span></div></div>`);
+  const m = $('#modal .modal'); m.classList.add('palm'); m.querySelector('.mh').style.display = 'none';
+  let sel = 0, cur = [];
+  const draw = () => { const q = $('#palQ').value.trim(); cur = items.filter(x => !q || (x.t + ' ' + x.s).includes(q)).slice(0, 9); sel = Math.min(sel, Math.max(0, cur.length - 1)); $('#palL').innerHTML = cur.map((x, i) => `<button class="pi ${i === sel ? 'on' : ''}" data-i="${i}"><span class="pic">${icon(x.ic, 'sm')}</span><span class="grow"><b>${esc(x.t)}</b><small>${esc(x.s)}</small></span>${icon('chev', 'sm')}</button>`).join('') || `<div class="empty small">لا نتائج مطابقة</div>`; $$('#palL .pi').forEach(b => b.onclick = () => pick(+b.dataset.i)); };
+  const pick = i => { const x = cur[i]; if (!x) return; closeModal(); if (x.go) go(x.go); else x.run(); };
+  $('#palQ').oninput = () => { sel = 0; draw(); };
+  $('#palQ').onkeydown = e => { if (e.key === 'ArrowDown') { sel = Math.min(cur.length - 1, sel + 1); draw(); e.preventDefault(); } else if (e.key === 'ArrowUp') { sel = Math.max(0, sel - 1); draw(); e.preventDefault(); } else if (e.key === 'Enter') pick(sel); };
+  draw();
+};
+addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); if ($('#modal')) closeModal(); else A.palette(); } });
 
 A.logout = () => { S.logout(); go('login'); };
 A.switchUser = id => { S.login(id); const u = S.user(); lastRoute = ''; if (location.hash === '#/' + HOME[u.role]) render(); else go(HOME[u.role]); };

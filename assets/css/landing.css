@@ -302,3 +302,71 @@ footer .bot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;p
 .trust{flex-wrap:wrap;justify-content:inherit}.trust img+span,.trust span+img{margin-inline-start:-4px}
 @media (max-width:720px){.trust img{height:38px}}
 a.cc{color:inherit}a.cc b{color:var(--navy)}a.cc:hover .n{background:var(--grad);color:#fff}
+
+/* ===== الشريط العلوي — زجاج بإطار متدرّج ومؤشّر منزلق ===== */
+.nav{top:14px}
+.nav .in{position:relative;height:68px;gap:18px;border-radius:22px;padding-inline:14px 10px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.nav .in::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:conic-gradient(from var(--nang,0deg),transparent 0 60%,rgba(143,211,184,.7) 72%,rgba(255,255,255,.9) 76%,rgba(143,211,184,.7) 80%,transparent 92%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:nrot 9s linear infinite;opacity:.55;pointer-events:none}
+@property --nang{syntax:"<angle>";initial-value:0deg;inherits:false}
+@keyframes nrot{to{--nang:360deg}}
+.nav.solid .in{background:rgba(20,22,34,.78);border-color:rgba(255,255,255,.1);box-shadow:0 24px 60px -24px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.06)}
+.nav .brand .bmark{position:relative;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:radial-gradient(circle at 30% 25%,rgba(143,211,184,.35),rgba(48,144,140,.12) 60%,transparent);border:1px solid rgba(143,211,184,.25);box-shadow:0 0 24px -6px rgba(93,168,139,.6)}
+.nav .brand img{height:30px}
+.nav .links{position:relative;gap:2px;padding:5px;border-radius:15px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.05);margin-inline-start:8px}
+.nav .links a{position:relative;z-index:1;padding:8px 14px;border-radius:11px;font-size:14px;color:rgba(255,255,255,.66);transition:color .25s}
+.nav .links a:hover,.nav .links a.on{background:none;color:#fff}
+.nav .links a.on::after{display:none}
+.nav .links .ind{position:absolute;top:5px;bottom:5px;right:0;left:auto;width:0;border-radius:11px;background:linear-gradient(135deg,rgba(93,168,139,.32),rgba(48,144,140,.18));box-shadow:inset 0 0 0 1px rgba(143,211,184,.35),0 6px 18px -8px rgba(93,168,139,.8);transition:transform .45s cubic-bezier(.3,1.3,.4,1),width .45s cubic-bezier(.3,1.3,.4,1),opacity .3s;opacity:0;pointer-events:none}
+.nav .links .ind::after{content:"";position:absolute;bottom:-1px;left:30%;right:30%;height:2px;border-radius:2px;background:#bfe9d8;box-shadow:0 0 10px #8fd3b8}
+html[dir=rtl] .nav .links .ind{left:0;right:auto}
+.nprog{position:absolute;left:18px;right:18px;bottom:-1px;height:2px;border-radius:2px;overflow:hidden;pointer-events:none}
+.nav #progress{position:absolute;inset:0;height:2px;display:block;z-index:auto;background:linear-gradient(90deg,#8fd3b8,#30908C,#e6fff5);transform-origin:right;transform:scaleX(0);box-shadow:0 0 12px rgba(143,211,184,.9)}
+
+/* ===== أرقام البطل — شريط زجاجي ===== */
+.hstats-w{position:relative;z-index:2;padding-bottom:36px}
+.hstats{display:grid;grid-template-columns:repeat(4,1fr);border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(10px);overflow:hidden}
+.hstats div{padding:22px 18px;text-align:center;position:relative}
+.hstats div+div::before{content:"";position:absolute;inset-inline-start:0;top:24%;bottom:24%;width:1px;background:linear-gradient(transparent,rgba(255,255,255,.14),transparent)}
+.hstats b{display:block;font-family:var(--f-head);font-size:clamp(28px,3vw,40px);font-weight:700;line-height:1.15;background:linear-gradient(180deg,#fff,#bfe9d8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hstats span{color:rgba(255,255,255,.55);font-size:13.5px}
+
+/* ===== عِقد السجايا ===== */
+.necklace{position:relative;background:linear-gradient(180deg,var(--deep),#191C2A 60%,#fff 60.1%);padding:10px 0 90px;overflow:hidden}
+.necklace::before{content:"";position:absolute;inset:0 0 40% 0;background:radial-gradient(700px 200px at 50% 50%,rgba(48,144,140,.22),transparent 70%);pointer-events:none}
+.nk-h{position:relative;text-align:center;margin-bottom:26px;color:#fff}
+.nk-h .kicker{color:#9fd6c0}.nk-h .kicker::after{content:"";width:26px;height:2px;border-radius:2px;background:linear-gradient(90deg,#30908C,#5DA88B)}
+.nk-h p{color:rgba(255,255,255,.6);margin-top:8px;font-size:15px}
+.nk-row{position:relative;overflow:hidden;padding:14px 0;-webkit-mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.nk-row::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:linear-gradient(90deg,transparent,rgba(220,240,232,.55) 20%,rgba(255,255,255,.75) 50%,rgba(220,240,232,.55) 80%,transparent);box-shadow:0 0 8px rgba(143,211,184,.4)}
+.nk-row+.nk-row{margin-top:-4px}
+.nk-track{position:relative;display:flex;width:max-content;animation:nk 70s linear infinite}
+.nk-track.rev{animation-direction:reverse;animation-duration:85s}
+.nk-row:hover .nk-track{animation-play-state:paused}
+@keyframes nk{to{transform:translateX(50%)}}
+.bead{display:inline-flex;align-items:center;gap:14px;margin-inline:22px;padding:9px 20px 9px 14px;border-radius:99px;background:linear-gradient(180deg,rgba(32,34,49,.95),rgba(24,26,38,.95));border:1px solid rgba(255,255,255,.1);color:#fff;font-family:var(--f-head);font-size:18px;white-space:nowrap;box-shadow:0 10px 30px -14px rgba(0,0,0,.8);transition:transform .35s cubic-bezier(.3,1.4,.5,1),border-color .3s,box-shadow .3s}
+.bead:hover{transform:translateY(-4px) scale(1.04);border-color:rgba(143,211,184,.5);box-shadow:0 16px 36px -14px rgba(48,144,140,.8)}
+.pearl{position:relative;width:22px;height:22px;border-radius:50%;flex:none;background:radial-gradient(circle at 32% 28%,#fff 0 12%,#f3fbf8 22%,#cfeee2 45%,#9fd6c0 70%,#6fb8a0 100%);box-shadow:0 0 14px rgba(191,233,216,.55),inset -3px -4px 6px rgba(48,144,140,.35)}
+.pearl::after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(120deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%);background-size:250% 100%;animation:sheen 4.5s ease-in-out infinite}
+.bead:nth-child(3n) .pearl::after{animation-delay:-1.5s}.bead:nth-child(3n+1) .pearl::after{animation-delay:-3s}
+@keyframes sheen{0%,60%{background-position:120% 0}100%{background-position:-120% 0}}
+
+/* ===== الدعوة الختامية مع التواصل ===== */
+.cta-band{padding:40px 0 120px}
+.cta-box .in{display:grid;grid-template-columns:1.25fr .9fr;gap:40px;align-items:center}
+.cta-txt{position:relative;z-index:1}.cta-txt h2{margin-top:10px}
+.cta-ct{position:relative;z-index:1;display:grid;gap:10px;padding:20px;border-radius:24px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px)}
+.cta-ct>small{color:rgba(255,255,255,.55);font-size:12.5px;margin-bottom:2px}
+.ctl{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;transition:.25s}
+.ctl:hover{background:rgba(255,255,255,.09);border-color:rgba(143,211,184,.45);transform:translateX(-4px)}
+.ctl .ci{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:rgba(93,168,139,.18);color:#bfe9d8;flex:none}
+.ctl .ci svg{width:22px;height:22px}
+.ctl.wa .ci{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;box-shadow:0 10px 20px -10px rgba(37,211,102,.8)}
+.ctl b{display:block;font-weight:600;font-size:14.5px}.ctl em{font-style:normal;font-size:13px;color:rgba(255,255,255,.6)}
+.ctl>span:nth-child(2){flex:1}.ctl>.ic{color:rgba(255,255,255,.4)}
+@media (max-width:1060px){.cta-box .in{grid-template-columns:1fr}.nav .in::before{display:none}}
+@media (max-width:720px){.hstats{grid-template-columns:repeat(2,1fr)}.hstats div:nth-child(3)::before{display:none}.bead{font-size:15px;margin-inline:12px;padding:7px 14px 7px 10px}.pearl{width:17px;height:17px}.necklace{padding-bottom:60px}.nav .brand .bmark{width:38px;height:38px}}
+@media (prefers-reduced-motion:reduce){.nk-track,.nav .in::before{animation:none}}
+.hstats-w{width:100%}
+.necklace{background:linear-gradient(180deg,var(--deep) 0%,#1A1D2B 62%,#3a3f52 78%,#fff 100%);padding-bottom:120px}
+.necklace::before{inset:0 0 20% 0}
+@media (max-width:720px){.necklace{padding-bottom:90px}}

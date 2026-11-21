@@ -8,24 +8,24 @@
 <meta name="theme-color" content="#141622">
 <link rel="icon" href="assets/img/icon.svg">
 <link rel="preload" href="assets/fonts/thmanyahseriftext-Regular.otf" as="font" type="font/otf" crossorigin><link rel="preload" href="assets/fonts/thmanyahseriftext-Bold.otf" as="font" type="font/otf" crossorigin>
-<link rel="stylesheet" href="assets/css/base.css?v=202611182024">
-<link rel="stylesheet" href="assets/css/landing.css?v=202611182024">
+<link rel="stylesheet" href="assets/css/base.css?v=20261121122343">
+<link rel="stylesheet" href="assets/css/landing.css?v=20261121122343">
 </head>
 <body>
 <div id="intro" aria-hidden="true"><img src="assets/img/icon-white.svg" alt=""></div>
-<div id="progress"></div>
-
 <header class="nav" id="nav">
   <div class="bar"><div class="in">
-    <a class="brand" href="#top"><img src="assets/img/icon-white.svg" alt="شعار مبادرة سجايا"><span>منصة سجايا<small>قيم أصيلة.. وطباع نبيلة</small></span></a>
-    <nav class="links" id="links">
-      <a href="#about">عن المبادرة</a><a href="#domains">المجالات</a><a href="#journey">رحلة المبادرة</a><a href="#res">الكراسة والإعلانات</a><a href="#partners">الشركاء</a><a href="#contact">تواصل معنا</a>
+    <a class="brand" href="#top" aria-label="منصة سجايا — الرئيسية"><span class="bmark"><img src="assets/img/icon-white.svg" alt=""></span><span>منصة سجايا<small>قيم أصيلة.. وطباع نبيلة</small></span></a>
+    <nav class="links" id="links" aria-label="أقسام الصفحة">
+      <span class="ind" id="ind" aria-hidden="true"></span>
+      <a href="#about">عن المبادرة</a><a href="#domains">المجالات</a><a href="#journey">رحلة المبادرة</a><a href="#res">الكراسة</a><a href="#partners">الشركاء</a><a href="#contact">تواصل معنا</a>
     </nav>
     <div class="cta">
       <a class="btn line" href="app.html#/login">دخول الجمعيات</a>
       <a class="btn primary shine" href="app.html#/register">سجّل جمعيتك</a>
     </div>
     <button class="menu-btn" id="menuBtn" aria-label="القائمة"><i data-ic="menu"></i></button>
+    <span class="nprog" aria-hidden="true"><i id="progress"></i></span>
   </div></div>
 </header>
 <nav class="mnav" id="mnav">
@@ -59,19 +59,19 @@
       <div class="chip c3"><span class="ci"><i data-ic="award"></i></span><span><b>معايير التميز</b>تقييم عادل وشفاف</span></div>
     </div>
   </div>
-  <div class="scroll-hint"><span></span>اكتشف</div>
+  <div class="wrap hstats-w"><div class="hstats fade-up d4">
+    <div><b class="num" data-count="3">٠</b><span>مجالات متكاملة</span></div>
+    <div><b class="num" data-count="20">٠</b><span>جمعية لرعاية الأيتام</span></div>
+    <div><b class="num" data-count="10">٠</b><span>لقاءات تمهيدية</span></div>
+    <div><b class="num" data-count="10">٠</b><span>مراحل حتى الملتقى</span></div>
+  </div></div>
 </section>
 
-<div class="statband">
-  <div class="wrap stats">
-    <div class="stat reveal"><b class="num" data-count="3">٠</b><span>مجالات متكاملة</span></div>
-    <div class="stat reveal"><b class="num" data-count="20">٠</b><span>جمعية لرعاية الأيتام</span></div>
-    <div class="stat reveal"><b class="num" data-count="10">٠</b><span>لقاءات تمهيدية</span></div>
-    <div class="stat reveal"><b class="num" data-count="10">٠</b><span>مراحل من التسجيل حتى الملتقى</span></div>
-  </div>
-</div>
-
-<div class="marquee" aria-hidden="true"><div class="track" id="marq"></div></div>
+<section class="necklace" aria-label="السجايا">
+  <div class="nk-h reveal"><span class="kicker">عِقد السجايا</span><p>قيمٌ تُنظم في شخصية اليتيم كما تُنظم اللآلئ في العِقد</p></div>
+  <div class="nk-row" data-dir="1"><div class="nk-track" id="nk1"></div></div>
+  <div class="nk-row" data-dir="-1"><div class="nk-track rev" id="nk2"></div></div>
+</section>
 
 <section class="about-sec" id="about">
   <div class="wrap about">
@@ -139,22 +139,18 @@
   </div>
 </section>
 
-<section class="contact-sec" id="contact">
-  <div class="wrap">
-    <div class="sec-h reveal"><span class="kicker">تواصل معنا</span><h2>إدارة المبادرة في خدمتكم</h2></div>
-    <div class="contact">
-      <a class="cc reveal" href="mailto:info@itmaam.org.sa"><div class="n"><i data-ic="mail"></i></div><div><small>البريد الإلكتروني</small><b dir="ltr">info@itmaam.org.sa</b></div></a>
-      <a class="cc reveal" href="tel:+966503700028"><div class="n"><i data-ic="phone"></i></div><div><small>الجوال</small><b dir="ltr">050 370 0028</b></div></a>
-      <a class="cc reveal" href="https://itmaam.org.sa" target="_blank" rel="noopener"><div class="n"><i data-ic="link"></i></div><div><small>الموقع الإلكتروني</small><b dir="ltr">itmaam.org.sa</b></div></a>
-    </div>
-  </div>
-</section>
 
-<section class="cta-band">
+
+<section class="cta-band" id="contact">
   <div class="wrap">
     <div class="cta-box reveal"><div class="in">
-      <div style="position:relative;z-index:1"><h2>ابدأ رحلة جمعيتك مع سجايا</h2><p>سجّل بيانات الجمعية وممثلها، وسيصلك رابط تفعيل الحساب على البريد الإلكتروني لتبدأ متابعة المراحل ورفع المتطلبات.</p></div>
-      <div class="row" style="position:relative;z-index:1"><a class="btn primary lg shine" href="app.html#/register">التسجيل الأولي <span class="arr"><i data-ic="chev"></i></span></a><a class="btn glass lg" href="app.html#/login">الدخول إلى الحساب</a></div>
+      <div class="cta-txt"><span class="kicker" style="color:#9fd6c0">ابدأ الآن</span><h2>ابدأ رحلة جمعيتك مع سجايا</h2><p>سجّل بيانات الجمعية وممثلها، وسيصلك رابط تفعيل الحساب لتبدأ متابعة المراحل ورفع المتطلبات.</p>
+        <div class="row mt24"><a class="btn primary lg shine" href="app.html#/register">التسجيل الأولي <span class="arr"><i data-ic="chev"></i></span></a><a class="btn glass lg" href="app.html#/login">الدخول إلى الحساب</a></div></div>
+      <div class="cta-ct"><small>تواصل مع إدارة المبادرة</small>
+        <a class="ctl wa" id="ctWa" target="_blank" rel="noopener"><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.2-.2-.5-.3z"/></svg></span><span><b>واتساب</b><em dir="ltr" id="ctWaN"></em></span><i data-ic="chev" class="sm"></i></a>
+        <a class="ctl" id="ctMail"><span class="ci"><i data-ic="mail"></i></span><span><b>البريد الإلكتروني</b><em dir="ltr" id="ctMailN"></em></span><i data-ic="chev" class="sm"></i></a>
+        <a class="ctl" id="ctSite" target="_blank" rel="noopener"><span class="ci"><i data-ic="link"></i></span><span><b>الموقع الإلكتروني</b><em dir="ltr" id="ctSiteN"></em></span><i data-ic="chev" class="sm"></i></a>
+      </div>
     </div></div>
   </div>
 </section>
@@ -173,8 +169,8 @@
 </footer>
 <button class="totop" id="totop" aria-label="العودة للأعلى"><i data-ic="chev"></i></button>
 
-<script src="assets/js/icons.js?v=202611182024"></script>
-<script src="assets/js/store.js?v=202611182024"></script>
-<script src="assets/js/landing.js?v=202611182024"></script>
+<script src="assets/js/icons.js?v=20261121122343"></script>
+<script src="assets/js/store.js?v=20261121122343"></script>
+<script src="assets/js/landing.js?v=20261121122343"></script>
 </body>
 </html>
