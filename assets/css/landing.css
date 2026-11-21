@@ -370,3 +370,17 @@ html[dir=rtl] .nav .links .ind{left:0;right:auto}
 .necklace{background:linear-gradient(180deg,var(--deep) 0%,#1A1D2B 62%,#3a3f52 78%,#fff 100%);padding-bottom:120px}
 .necklace::before{inset:0 0 20% 0}
 @media (max-width:720px){.necklace{padding-bottom:90px}}
+
+/* ===== عنوان البطل: مساحة كافية للنقاط والتنوين وتنسيق أدق ===== */
+h1,h2,h3,h4,.hero h1,.sec-h h2,.about h2{letter-spacing:0}
+.hero h1{font-size:clamp(46px,6.4vw,96px);line-height:1.28;margin:26px 0 20px;font-weight:700}
+.hero h1 .ln{display:block;overflow:hidden;padding:.14em .06em .34em;margin:-.14em -.06em -.3em}
+.hero h1 .ln>span{display:inline-block;padding-bottom:.04em}
+.hero h1 .ln:first-child>span{color:#fff;text-shadow:0 10px 40px rgba(0,0,0,.35)}
+.hero h1 .shimmer{padding:.1em .04em .3em;margin:-.1em -.04em -.3em;background:linear-gradient(100deg,#9fdcc4 0%,#46b8b0 28%,#effff8 46%,#46b8b0 60%,#9fdcc4 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 12px 30px rgba(48,144,140,.35))}
+.pdots{display:inline-flex;gap:.12em;margin-inline-start:.16em;vertical-align:.02em}
+.pdots i{width:.15em;height:.15em;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff 0 14%,#e6f7f0 30%,#9fd6c0 70%,#5DA88B);box-shadow:0 0 .18em rgba(191,233,216,.8);animation:pdot 3.6s ease-in-out infinite}
+.pdots i+i{animation-delay:.25s}
+@keyframes pdot{0%,100%{transform:translateY(0)}50%{transform:translateY(-.05em)}}
+.hero p.lead{margin-top:6px}
+@media (max-width:1060px){.hero h1{font-size:clamp(44px,11vw,72px)}}
